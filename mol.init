@@ -1,8 +1,10 @@
 #!/bin/sh
 #
-# mol		This shell script loads mol-specific kernel modules
+# mol		This shell script loads mol kernel module
 #
 # chkconfig:    345  235 69
+#
+# description:  mol Mac-On-Linux 
 #
 
 # Source function library.
