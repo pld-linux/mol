@@ -21,6 +21,7 @@ BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	ncurses-devel
 %{!?_without_dist_kernel:BuildRequires:	kernel-headers}
+Requires(post,preun):	/sbin/chkconfig
 Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
@@ -73,7 +74,6 @@ version.
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 
-
 %prep
 %setup -q -n mol-rsync
 %patch0 -p1
@@ -116,9 +116,7 @@ mv -f $RPM_BUILD_ROOT/modules/up/%{_kver}/{mol.o,molsymglue.o,sheep.o} $RPM_BUIL
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
-%post -n kernel-%{name}
-/sbin/depmod -a
+%post
 /sbin/chkconfig --add mol
 if [ -f /var/lock/subsys/mol ]; then
         /etc/rc.d/init.d/mol stop 1>&2
@@ -135,6 +133,9 @@ if [ "$1" = "0" ]; then
     /sbin/chkconfig --del mol
 fi
 							
+%post -n kernel-%{name}
+/sbin/depmod -a
+
 %postun -n kernel-%{name}
 /sbin/depmod -a
 
