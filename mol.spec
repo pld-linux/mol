@@ -5,7 +5,7 @@
 # Conditional build:
 %bcond_without dist_kernel 	# without distribution kernel packages
 
-%define _snap 030921
+%define _snap 031019
 %define _rel 0.1
 
 %if "%{_snap}" != "0"
@@ -22,11 +22,14 @@ Release:	%{snapshot}%{_rel}
 License:	GPL
 Group:		Applications/Emulators
 Source0:	mol-%{_snap}.tar.bz2
-# Source0-md5:	50e5777d3a383678744764e2c1c7c66c
+# Source0-md5:	446f58df2cca1224e063508de0efea70
 Source1:	mol.init
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
 Patch2:		%{name}-kernel.patch
+Patch3:		%{name}-sheepnet.patch
+Patch4:		%{name}-netdriver.patch
+Patch5:		%{name}-usbdev.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -97,15 +100,20 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1 
+%patch4 -p1
+%patch5 -p1
 
 %build
 rm -f missing
 rm -f acinclude.m4
-%{__aclocal} -I .
+mkdir scripts/buildtools
+%{__aclocal} -I . 2>/dev/null
+echo "AC_DEFUN([AM_PROG_AS],[])" > acinclude.m4
 %{__autoheader}
-%{__automake}
+%{__automake} -a -c 
 %{__autoconf}
-%configure --enable-fhs --enable-debugger
+%configure --enable-fhs --enable-debugger --disable-tap --disable-tun
 %{__make} clean
 %{__make} -C scripts 
 %{__make} -C src/kmod CC="%{__cc} -D__KERNEL_SMP" 
