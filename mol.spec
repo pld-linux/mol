@@ -1,19 +1,32 @@
 #
+# TODO:
+# 2.6 kernel support
+# 
 # Conditional build:
-# _without_dist_kernel	- without distribution kernel packages
-#
+%bcond_without dist_kernel 	# without distribution kernel packages
+
+%define _snap 030921
+%define _rel 0.1
+
+%if "%{_snap}" != "0"
+%define snapshot snap%{_snap}.rel
+%else
+%define snapshot %{nil}
+%endif
+
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.68
-Release:	1@%{_kernel_ver_str}
+Version:	0.9.69
+Release:	%{snapshot}%{_rel}
 License:	GPL
 Group:		Applications/Emulators
-# ftp://ftp.nada.kth.se/pub/home/f95-sry/Public/mac-on-linux/mol-0.9.68.tgz
-Source0:	mol-0.9.68.tgz
+Source0:	mol-%{_snap}.tar.bz2
+# Source0-md5:	50e5777d3a383678744764e2c1c7c66c
 Source1:	mol.init
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
+Patch2:		%{name}-kernel.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -22,7 +35,7 @@ BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	ncurses-devel
 BuildRequires:	rpmbuild(macros) >= 1.118
-%{!?_without_dist_kernel:BuildRequires:	kernel-headers}
+%{!?with_dist_kernel:BuildRequires:	kernel-headers}
 Requires(post,preun):	/sbin/chkconfig
 Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
@@ -37,17 +50,18 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
 With MOL you can run MacOS under Linux - in full speed! All PowerPC
-versions of MacOS are supported (including MacOS 9.2).
+versions of MacOS are supported (including MacOSX 10.2).
 
 %description -l pl
 Przy u¿uciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
 szybko¶ci±! Obs³ugiwane s± wszystkie wersje PowerPC MacOS-a (w³±cznie
-z MacOS 9.2).
+z MacOSX 10.2).
 
 %package -n kernel-%{name}
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Group:		Applications/Emulators
+Release:	%{snapshot}%{_rel}@%{_kernel_ver_str}
 Requires(post,postun):	/sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
@@ -64,6 +78,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Group:		Applications/Emulators
+Release:	%{snapshot}%{_rel}@%{_kernel_ver_str}
 Requires(post,postun):	/sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
@@ -78,22 +93,26 @@ Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 
 %prep
-%setup -q
+%setup -q -n mol
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 rm -f missing
+rm -f acinclude.m4
 %{__aclocal} -I .
 %{__autoheader}
 %{__automake}
 %{__autoconf}
 %configure --enable-fhs --enable-debugger
 %{__make} clean
-%{__make} -C scripts all
-%{__make} CC="gcc -D__SMP__" SMP=1 modules_
+%{__make} -C scripts 
+%{__make} -C src/kmod CC="%{__cc} -D__KERNEL_SMP" 
+%{__make} -C src/netdriver CC="%{__cc} -D__KERNEL_SMP" 
 mkdir smp
-%{__make} DESTDIR=$RPM_BUILD_DIR/%{_bdir}/smp install_modules
+cp -f src/kmod/build/mol.o smp
+cp -f src/netdriver/build/sheep.o smp
 %{__make} clean
 %{__make}
 
@@ -112,9 +131,9 @@ install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
 mv -f $RPM_BUILD_ROOT%{_datadir}/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
 mv -f $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/%{_kver} $RPM_BUILD_ROOT/modules/up
-cp -r smp/%{_libdir}/mol/%{version}/modules/%{_kver} $RPM_BUILD_ROOT/modules/smp
-mv -f $RPM_BUILD_ROOT/modules/smp/%{_kver}/{mol.o,molsymglue.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/
-mv -f $RPM_BUILD_ROOT/modules/up/%{_kver}/{mol.o,molsymglue.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/
+cp -r smp/ $RPM_BUILD_ROOT/modules/
+mv -f $RPM_BUILD_ROOT/modules/smp/{mol.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/
+mv -f $RPM_BUILD_ROOT/modules/up/%{_kver}/{mol.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -150,7 +169,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc $RPM_BUILD_ROOT/moldoc
+%doc $RPM_BUILD_ROOT/moldoc/*
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/mol/*
 %attr(755,root,root) %{_bindir}/*
 %dir %{_mol_libdir}
@@ -158,8 +177,6 @@ fi
 %attr(755,root,root) %{_mol_libdir}/bin/keyremap
 %attr(755,root,root) %{_mol_libdir}/bin/kver_approx
 %attr(755,root,root) %{_mol_libdir}/bin/modload
-%attr(755,root,root) %{_mol_libdir}/bin/symcheck
-%attr(755,root,root) %{_mol_libdir}/bin/symchecker.pl
 %attr(755,root,root) %{_mol_libdir}/bin/mol_uname
 %attr(755,root,root) %{_mol_libdir}/bin/molrcget
 %attr(755,root,root) %{_mol_libdir}/bin/selftest
