@@ -6,10 +6,11 @@ Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	0.9.68
-Release:	0.3
+Release:	1@%{_kernel_ver_str}
 License:	GPL
 Group:		Applications/Emulators
-Source0:	mol-rsync.tgz
+# ftp://ftp.nada.kth.se/pub/home/f95-sry/Public/mac-on-linux/mol-0.9.68.tgz
+Source0:	mol-0.9.68.tgz
 Source1:	mol.init
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
@@ -27,6 +28,7 @@ Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
+%define _bdir %{name}-%{version}
 %define _kver %(echo %{_kernel_ver} | cut -d- -f1)
 %define _mol_libdir 		%{_libdir}/mol/%{version}
 %define _mol_datadir 		%{_datadir}/mol/%{version}
@@ -75,7 +77,7 @@ Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 
 %prep
-%setup -q -n mol-rsync
+%setup -q 
 %patch0 -p1
 %patch1 -p1 
 
@@ -90,7 +92,7 @@ rm -f missing
 %{__make} -C scripts all
 %{__make} CC="gcc -D__SMP__" SMP=1 modules_
 mkdir smp
-%{__make} DESTDIR=$RPM_BUILD_DIR/mol-rsync/smp install_modules
+%{__make} DESTDIR=$RPM_BUILD_DIR/%{_bdir}/smp install_modules
 %{__make} clean
 %{__make}
 
@@ -167,12 +169,12 @@ fi
 %dir %{_mol_datadir}
 %{_mol_datadir}/images
 %{_mol_datadir}/oftrees
-%{_mol_datadir}/pci_roms
 %{_mol_datadir}/syms
 %{_mol_datadir}/vmodes
 %{_mol_datadir}/nvram
 %{_mol_datadir}/graphics
 %{_mol_datadir}/config
+%{_mol_datadir}/drivers
 %{_mol_datadir}/startboing
 %dir %{_mol_localstatedir}
 %{_mol_localstatedir}/nvram.nw
