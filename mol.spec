@@ -47,7 +47,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 
 %build
 rm -f missing
-aclocal
+%{__aclocal}
 %{__autoconf}
 %{__automake}
 %configure --enable-fhs
