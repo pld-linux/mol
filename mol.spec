@@ -135,7 +135,7 @@ if [ "$1" = "0" ]; then
 	fi
 	/sbin/chkconfig --del mol
 fi
-							
+
 %post	-n kernel-%{name}
 %depmod %{_kernel_ver}
 
