@@ -1,0 +1,13 @@
+--- mol-0.9.69+20031019.orig/src/drivers/usbdev.c
++++ mol-0.9.69+20031019/src/drivers/usbdev.c
+@@ -14,6 +14,10 @@
+  *   
+  */
+ 
++#ifndef __user
++#define __user
++#endif
++
+ #include "mol_config.h"
+ #include "usb-client.h"
+ #include <signal.h>
