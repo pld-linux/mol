@@ -2,7 +2,7 @@ Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	0.9.68
-Release:	0.1
+Release:	0.2
 License:	GPL
 Group:		Applications/Emulators
 Source0:	mol-rsync.tgz
@@ -14,6 +14,7 @@ BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	kernel-headers
+BuildRequires:	XFree86-devel
 Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
@@ -75,20 +76,16 @@ rm -f missing
 %{__make} clean
 %{__make} -C scripts all
 %{__make} CC="gcc -D__SMP__" SMP=1 modules_
-cp -r src/kmod src/kmod-smp
+mkdir smp
+%{__make} DESTDIR=$RPM_BUILD_DIR/mol-rsync/smp install_modules
 %{__make} clean
-%{__make} KERNEL_TREES=%kernel_trees
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 %{__make} DESTDIR=$RPM_BUILD_ROOT install
 mv -f $RPM_BUILD_ROOT%{_datadir}/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
-mv $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r` $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-up
-rm -rf src/kmod
-mv -f src/kmod-smp src/kmod
-%{__make} DESTDIR=$RPM_BUILD_ROOT install-modules
-mv $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r` $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-smp
-mv $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-up $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`
+cp -r smp/%{_libdir}/mol/%{version}/modules/`uname -r` $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-smp
 
 %clean
 rm -rf $RPM_BUILD_ROOT
