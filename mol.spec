@@ -70,7 +70,7 @@ MOL ¤Ï MacOS ¤ò Linux ¾å¤ÇÆ°ºî¤µ¤»¤ë¤³¤È¤¬½ÐÍè¤Þ¤¹¡¥Æ°ºî¤â¹âÂ®¤Ç¤¹¡¥
 ¥Ð¡¼¥¸¥ç¥ó 9.2 ¤ò´Þ¤á¡¤PowerPC ÍÑ MacOS ¤ÎÁ´¥Ð¡¼¥¸¥ç¥ó¤¬Æ°ºî¤·¤Þ¤¹¡¥
 
 %description -l pl
-Przy u¿uciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
+Przy u¿yciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
 szybko¶ci±! Obs³ugiwane s± wszystkie wersje PowerPC MacOS-a (w³±cznie
 z MacOSX 10.2).
 
@@ -107,7 +107,7 @@ version.
 
 %description -n kernel-smp-%{name} -l pl
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
-tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
+tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 
 %prep
 %setup -q -n mol
