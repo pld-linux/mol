@@ -1,0 +1,44 @@
+--- mol-0.9.69+20031019.orig/src/netdriver/sheep.c
++++ mol-0.9.69+20031019/src/netdriver/sheep.c
+@@ -25,6 +25,8 @@
+ #include <linux/in.h>
+ #include <linux/wait.h>
+ 
++MODULE_AUTHOR("Marc Hellwig and Christian Bauer");
++MODULE_DESCRIPTION("SheepShaver/Basilisk II networking");
+ MODULE_LICENSE("GPL");
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+@@ -149,7 +151,11 @@
+ sheep_net_receiver( struct sk_buff *skb, struct net_device *dev, struct packet_type *pt )
+ {
+ 	int multicast = (skb->mac.ethernet->h_dest[0] & ETH_ADDR_MULTICAST);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
++	struct SheepVars *v = (struct SheepVars *)pt->af_packet_priv;
++#else
+ 	struct SheepVars *v = (struct SheepVars *)pt->data;
++#endif
+ 	const char *laddr = dev->dev_addr;
+ 	struct sk_buff *skb2;
+ 	
+@@ -499,7 +505,11 @@
+ 		v->pt.type = htons(ETH_P_ALL);
+ 		v->pt.dev = v->ether;
+ 		v->pt.func = sheep_net_receiver;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
++		v->pt.af_packet_priv = v;
++#else
+ 		v->pt.data = v;
++#endif
+ 		dev_add_pack( &v->pt );
+ 		return 0;
+ error:
+@@ -590,7 +600,7 @@
+ };
+ 
+ static struct miscdevice sheep_net_device = {
+-	SHEEP_NET_MINOR, "sheep_net", &sheep_net_fops, NULL, NULL
++	SHEEP_NET_MINOR, "sheep_net", &sheep_net_fops
+ };
+ 
+ int 
