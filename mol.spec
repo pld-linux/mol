@@ -6,7 +6,7 @@
 %bcond_without dist_kernel 	# without distribution kernel packages
 %bcond_without dist_gkh		# without distribution glibc-kernel-headers
 
-%define _snap 040105
+%define _snap 040110
 %define _rel 0.2
 
 %if "%{_snap}" != "0"
@@ -23,10 +23,10 @@ Release:	%{snapshot}%{_rel}
 License:	GPL
 Group:		Applications/Emulators
 Source0:	mol-%{_snap}.tar.bz2
-# Source0-md5:	d371cf7f3b5b40d243cd62f0f62aad8b
+# Source0-md5:	afb3c0fe9deff7c3a0d006ea8f80afa8
 Source1:	mol.init
 Source2:	libimport-%{_snap}.tar.bz2
-# Source2-md5:	7b897b5948e068f472f2fbe70037d2bd
+# Source2-md5:	14fa728f6a6f0596d0aa4c0247d233cf
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
 Patch2:		%{name}-kernel.patch
@@ -35,6 +35,8 @@ Patch4:		%{name}-netdriver.patch
 Patch5:		%{name}-libimport.patch
 Patch6:		%{name}-usbdev.patch
 Patch7:		%{name}-gkh.patch
+Patch8:		%{name}-gkh-compiler_h.patch
+Patch9:		%{name}-gkh-includes.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -107,13 +109,15 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1 
+#%patch3 -p1 
 %patch4 -p1
 %patch5 -p1
 
 %if %{with dist_gkh}
 %patch6 -p1 
 %patch7 -p1
+%patch8 -p1 
+%patch9 -p1
 %endif
 
 bzip2 -dc %{SOURCE2} | tar -xf - 
