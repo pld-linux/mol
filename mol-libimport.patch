@@ -1,0 +1,19 @@
+--- mol/scripts/libimport.orig	2003-09-04 13:09:42.000000000 +0200
++++ mol/scripts/libimport	2003-12-24 23:52:48.000000000 +0100
+@@ -144,7 +144,7 @@
+ ###################################
+ 
+ [ $# == 0 ] && {
+-    echo "Usage: libimport import|export|delete"
++    echo "Usage: libimport import|export|delete|copy"
+     exit 1
+ }
+ 
+@@ -155,6 +155,7 @@
+     import_dist)
+ 		RSYNC_MODULE=$RSYNC_MODULE_R
+ 		do_import ;;
++    copy)       copybinfiles libimport mollib ;;
+     *)		echo "bad command $1" ; exit 1 ;;
+ esac
+ 
