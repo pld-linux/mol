@@ -151,7 +151,7 @@ cp -f src/netdriver/build/sheep.o smp
 
 rm linux/.config
 cp -f linux/config-up linux/.config
-(cd linux; make oldconfig)
+cd linux; make oldconfig; cd ..
 
 %{__make} clean
 %{__make}
