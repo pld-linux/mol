@@ -12,6 +12,8 @@ URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	bison
+BuildRequires:	flex
+BuildRequires:	kernel-headers
 Requires:	kernel-mol
 Requires:	dev >= 2.8.0-24
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
