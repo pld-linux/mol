@@ -13,24 +13,37 @@
 RETVAL=0
 # See how we were called.
 case "$1" in
-  start|restart|reload|force-reload)
+  start)
 	# Check if the service is already running?
 	if [ ! -f /var/lock/subsys/mol ]; then
 		msg_starting mol
-		modprobe mol molsymglue
+		modprobe mol
 		RETVAL=$?
-		modprobe sheep tun ethertap 
+		modprobe sheep 
+		modprobe tun 
+		modprobe ethertap 
 		RET=$?
 		[ $RETVAL -eq 0 ] && RETVAL=$RET
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mol
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mol && ok || fail 
 	else
 		msg_already_running mol
 	fi
 	;;
   stop)
+	if [ -f /var/lock/subsys/mol ]; then
+		msg_stopping mol
+		rmmod sheep 
+		rmmod tun 
+		rmmod ethertap
+		rmmod mol
+		killproc mol
+		rm -f /var/lock/subsys/mol >/dev/null 2>&1
+	else
+		msg_not_running mol
+	fi	
 	;;
   status)
-	if [ `lsmod | grep '^mol \|^molsymglue \|^sheep \|^tun\|^ethertap' | wc -l` -eq 5 ]; then
+	if [ `lsmod | grep '^mol \|^sheep \|^tun\|^ethertap' | wc -l` -eq 4 ]; then
 		nls "mol modules are loaded..."
 	else
 		if [ -f /var/lock/subsys/mol ]; then
@@ -43,7 +56,7 @@ case "$1" in
 	fi
 	;;
   *)
-	msg_usage "$0 {start|stop|restart|reload|force-reload|status}"
+	msg_usage "$0 {start|stop|status}"
 	exit 3
 esac
 
