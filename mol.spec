@@ -31,8 +31,7 @@ Patch1:		%{name}-configure.patch
 Patch2:		%{name}-kernel.patch
 Patch3:		%{name}-sheepnet.patch
 Patch4:		%{name}-netdriver.patch
-Patch5:		%{name}-usbdev.patch
-Patch6:		%{name}-libimport.patch
+Patch5:		%{name}-libimport.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -108,7 +107,6 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 %patch3 -p1 
 %patch4 -p1
 %patch5 -p1
-%patch6 -p1 
 
 bzip2 -dc %{SOURCE2} | tar -xf - 
 
