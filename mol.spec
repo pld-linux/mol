@@ -6,7 +6,7 @@
 %bcond_without dist_kernel 	# without distribution kernel packages
 
 %define _snap 031019
-%define _rel 0.1
+%define _rel 0.2
 
 %if "%{_snap}" != "0"
 %define snapshot snap%{_snap}.rel
@@ -24,12 +24,15 @@ Group:		Applications/Emulators
 Source0:	mol-%{_snap}.tar.bz2
 # Source0-md5:	446f58df2cca1224e063508de0efea70
 Source1:	mol.init
+Source2:	libimport-%{_snap}.tar.bz2
+# Source2-md5:	2f5a88edcc3401d7015aa9d7efbed312
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
 Patch2:		%{name}-kernel.patch
 Patch3:		%{name}-sheepnet.patch
 Patch4:		%{name}-netdriver.patch
 Patch5:		%{name}-usbdev.patch
+Patch6:		%{name}-libimport.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -37,8 +40,10 @@ BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	ncurses-devel
+BuildRequires:	bzip2
 BuildRequires:	rpmbuild(macros) >= 1.118
-%{!?with_dist_kernel:BuildRequires:	kernel-headers}
+%{?with_dist_kernel:BuildRequires:	kernel-headers}
+%{?with_dist_kernel:BuildRequires:	kernel-source}
 Requires(post,preun):	/sbin/chkconfig
 Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
@@ -103,6 +108,9 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 %patch3 -p1 
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1 
+
+bzip2 -dc %{SOURCE2} | tar -xf - 
 
 %build
 rm -f missing
@@ -113,14 +121,28 @@ echo "AC_DEFUN([AM_PROG_AS],[])" > acinclude.m4
 %{__autoheader}
 %{__automake} -a -c 
 %{__autoconf}
+
+export KERNEL_SOURCE=`pwd`/linux/
+cp -rdp %{_kernelsrcdir}/ .
+
 %configure --enable-fhs --enable-debugger --disable-tap --disable-tun
 %{__make} clean
+
+rm linux/.config 
+cp -f linux/config-smp linux/.config
+(cd linux; make oldconfig)
+
 %{__make} -C scripts 
 %{__make} -C src/kmod CC="%{__cc} -D__KERNEL_SMP" 
 %{__make} -C src/netdriver CC="%{__cc} -D__KERNEL_SMP" 
 mkdir smp
 cp -f src/kmod/build/mol.o smp
 cp -f src/netdriver/build/sheep.o smp
+
+rm linux/.config
+cp -f linux/config-up linux/.config
+(cd linux; make oldconfig)
+
 %{__make} clean
 %{__make}
 
@@ -131,6 +153,12 @@ install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
 install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc
 install -d $RPM_BUILD_ROOT/modules/{up,smp}
+
+for x in graphics drivers images nvram ; do
+    test -d mollib/$x || mkdir mollib/$x
+done
+		
+scripts/libimport copy 
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
