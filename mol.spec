@@ -6,7 +6,7 @@ Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	0.9.68
-Release:	0.2
+Release:	0.3
 License:	GPL
 Group:		Applications/Emulators
 Source0:	mol-rsync.tgz
@@ -18,11 +18,17 @@ BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
+BuildRequires:	ncurses-devel
 %{!?_without_dist_kernel:BuildRequires:	kernel-headers}
 Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define _kver %(echo %{_kernel_ver} | cut -d- -f1)
+%define _mol_libdir 		%{_libdir}/mol/%{version}
+%define _mol_datadir 		%{_datadir}/mol/%{version}
+%define _mol_localstatedir	/var/lib/mol
 
 %description
 With MOL you can run MacOS under Linux - in full speed! All PowerPC
@@ -33,36 +39,39 @@ Przy u¿uciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
 szybko¶ci±! Obs³ugiwane s± wszystkie wersje PowerPC MacOS-a (w³±cznie
 z MacOS 9.2).
 
-%package -n kernel-mol
+%package -n kernel-%{name}
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Group:		Applications/Emulators
+Requires(post,postun):  /sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
 
-%description -n kernel-mol
+%description -n kernel-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking).
 
-%description -n kernel-mol -l pl
+%description -n kernel-%{name} -l pl
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci).
 
-%package -n kernel-smp-mol
+%package -n kernel-smp-%{name}
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Group:		Applications/Emulators
+Requires(post,postun):  /sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
 
-%description -n kernel-smp-mol
+%description -n kernel-smp-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking). SMP
 version.
 
-%description -n kernel-smp-mol -l pl
+%description -n kernel-smp-%{name} -l pl
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
+
 
 %prep
 %setup -q -n mol-rsync
@@ -76,32 +85,45 @@ rm -f missing
 %{__automake}
 %{__autoconf}
 %configure --enable-fhs --enable-debugger
-
 %{__make} clean
 %{__make} -C scripts all
-
 %{__make} CC="gcc -D__SMP__" SMP=1 modules_
 mkdir smp
 %{__make} DESTDIR=$RPM_BUILD_DIR/mol-rsync/smp install_modules
-
 %{__make} clean
 %{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
+install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
+install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc
+install -d $RPM_BUILD_ROOT/modules/{up,smp}
+
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
 
 mv -f $RPM_BUILD_ROOT%{_datadir}/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
-cp -r smp/%{_libdir}/mol/%{version}/modules/%{_kernel_ver} $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/%{_kernel_ver}-smp
+mv -f $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/%{_kver} $RPM_BUILD_ROOT/modules/up
+cp -r smp/%{_libdir}/mol/%{version}/modules/%{_kver} $RPM_BUILD_ROOT/modules/smp
+mv -f $RPM_BUILD_ROOT/modules/smp/%{_kver}/{mol.o,molsymglue.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/
+mv -f $RPM_BUILD_ROOT/modules/up/%{_kver}/{mol.o,molsymglue.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%define _mol_libdir 		%{_libdir}/mol/%{version}
-%define _mol_datadir 		%{_datadir}/mol/%{version}
-%define _mol_localstatedir	/var/lib/mol
+
+%post -n kernel-%{name}
+/sbin/depmod -a
+
+%postun -n kernel-%{name}
+/sbin/depmod -a
+
+%post -n kernel-smp-%{name}
+/sbin/depmod -a
+
+%postun -n kernel-smp-%{name}
+/sbin/depmod -a
 
 %files
 %defattr(644,root,root,755)
@@ -111,7 +133,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_mol_libdir}
 %dir %{_mol_libdir}/bin
 %attr(755,root,root) %{_mol_libdir}/bin/*
-%dir %{_mol_libdir}/modules
+#%dir %{_mol_libdir}/modules
 %attr(755,root,root) %{_mol_libdir}/mol.symbols
 %dir %{_mol_datadir}
 %{_mol_datadir}/images
@@ -128,10 +150,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 
-%files -n kernel-mol
+%files -n kernel-%{name}
 %defattr(644,root,root,755)
-%{_mol_libdir}/modules/%{_kernel_ver}
+/lib/modules/%{_kernel_ver}/misc/*
 
-%files -n kernel-smp-mol
+%files -n kernel-smp-%{name}
 %defattr(644,root,root,755)
-%{_mol_libdir}/modules/%{_kernel_ver}-smp
+/lib/modules/%{_kernel_ver}smp/misc/*
