@@ -48,7 +48,7 @@ z MacOS 9.2).
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Group:		Applications/Emulators
-Requires(post,postun):  /sbin/depmod
+Requires(post,postun):	/sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
 
@@ -64,7 +64,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Group:		Applications/Emulators
-Requires(post,postun):  /sbin/depmod
+Requires(post,postun):	/sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
 
@@ -78,9 +78,9 @@ Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 
 %prep
-%setup -q 
+%setup -q
 %patch0 -p1
-%patch1 -p1 
+%patch1 -p1
 
 %build
 rm -f missing
@@ -122,18 +122,18 @@ rm -rf $RPM_BUILD_ROOT
 %post
 /sbin/chkconfig --add mol
 if [ -f /var/lock/subsys/mol ]; then
-        /etc/rc.d/init.d/mol stop 1>&2
-        /etc/rc.d/init.d/mol start 1>&2
+	/etc/rc.d/init.d/mol stop 1>&2
+	/etc/rc.d/init.d/mol start 1>&2
 else
 	echo "Run \"/etc/rc.d/init.d/mol start\" to load modules"
 fi
 
-%preun 
+%preun
 if [ "$1" = "0" ]; then
-    if [ -f /var/lock/subsys/mol ]; then
-	/etc/rc.d/init.d/mol stop 1>&2
-    fi
-    /sbin/chkconfig --del mol
+	if [ -f /var/lock/subsys/mol ]; then
+		/etc/rc.d/init.d/mol stop 1>&2
+	fi
+	/sbin/chkconfig --del mol
 fi
 							
 %post	-n kernel-%{name}
