@@ -1,7 +1,7 @@
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.64
+Version:	0.9.65
 Release:	0.1
 License:	GPL
 Group:		Applications/Emulators
