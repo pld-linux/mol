@@ -1,19 +1,20 @@
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.65
+Version:	0.9.68
 Release:	0.1
 License:	GPL
 Group:		Applications/Emulators
-Source0:	ftp://ftp.nada.kth.se/pub/home/f95-sry/Public/mac-on-linux/%{name}-%{version}.tgz
+Source0:	mol-rsync.tgz
 Patch0:		%{name}-curses.patch
+Patch1:		%{name}-configure.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	bison
 BuildRequires:	flex
 BuildRequires:	kernel-headers
-Requires:	kernel-mol
+Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -32,6 +33,8 @@ Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Group:		Applications/Emulators
 ExclusiveArch:	ppc
+Obsoletes:	kernel-mol
+Provides:	kernel(mol)
 
 %description -n kernel-mol
 This package contains the Mac-on-Linux kernel module needed by MOL. It
@@ -41,16 +44,38 @@ also contains the sheep_net kernel module (for networking).
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci).
 
+%package -n kernel-smp-mol
+Summary:	Mac-on-Linux kernel modules SMP
+Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
+Group:		Applications/Emulators
+ExclusiveArch:	ppc
+Obsoletes:	kernel-mol
+Provides:	kernel(mol)
+
+%description -n kernel-smp-mol
+This package contains the Mac-on-Linux kernel module needed by MOL. It
+also contains the sheep_net kernel module (for networking). SMP version
+
+%description -n kernel-smp-mol -l pl
+Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
+tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
+
 %prep
-%setup -q
+%setup -q -n mol-rsync
 %patch0 -p1
+%patch1 -p1 
 
 %build
 rm -f missing
-%{__aclocal}
-%{__autoconf}
+%{__aclocal} -I .
+%{__autoheader}
 %{__automake}
-%configure --enable-fhs
+%{__autoconf}
+%configure --enable-fhs --enable-debugger 
+%{__make} clean
+%{__make} -C scripts all
+%{__make} CC="gcc -D__SMP__" SMP=1 modules_
+cp -r src/kmod src/kmod-smp
 %{__make} clean
 %{__make} KERNEL_TREES=%kernel_trees
 
@@ -58,6 +83,12 @@ rm -f missing
 rm -rf $RPM_BUILD_ROOT
 %{__make} DESTDIR=$RPM_BUILD_ROOT install
 mv -f $RPM_BUILD_ROOT%{_datadir}/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
+mv $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r` $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-up
+rm -rf src/kmod
+mv -f src/kmod-smp src/kmod
+%{__make} DESTDIR=$RPM_BUILD_ROOT install-modules
+mv $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r` $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-smp
+mv $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`-up $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/`uname -r`
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -65,6 +96,7 @@ rm -rf $RPM_BUILD_ROOT
 %define _mol_libdir 		%{_libdir}/mol/%{version}
 %define _mol_datadir 		%{_datadir}/mol/%{version}
 %define _mol_localstatedir	/var/lib/mol
+%define _kver %(echo `uname -r`)
 
 %files
 %defattr(644,root,root,755)
@@ -76,15 +108,21 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/*
 %attr(755,root,root) %_mol_libdir/bin/*
 %dir %_mol_libdir/modules
+%attr(755,root,root) %_mol_libdir/mol.symbols
 %_mol_datadir/images/*
 %_mol_datadir/oftrees/*
 %_mol_datadir/pci_roms/*
 %_mol_datadir/syms/*
 %_mol_datadir/vmodes/*
 %_mol_datadir/nvram/*
+%_mol_datadir/graphics/*
+%_mol_datadir/config/*
 %_mol_datadir/startboing
-%_mol_datadir/config/molrc.sys
 
 %files -n kernel-mol
 %defattr(644,root,root,755)
-%{_mol_libdir}/modules/
+%{_mol_libdir}/modules/%{_kver}
+
+%files -n kernel-smp-mol
+%defattr(644,root,root,755)
+%{_mol_libdir}/modules/%{_kver}-smp
