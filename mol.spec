@@ -23,10 +23,10 @@ Release:	%{snapshot}%{_rel}
 License:	GPL
 Group:		Applications/Emulators
 Source0:	mol-%{_snap}.tar.bz2
-# Source0-md5:	446f58df2cca1224e063508de0efea70
+# Source0-md5:	d371cf7f3b5b40d243cd62f0f62aad8b
 Source1:	mol.init
 Source2:	libimport-%{_snap}.tar.bz2
-# Source2-md5:	2f5a88edcc3401d7015aa9d7efbed312
+# Source2-md5:	7b897b5948e068f472f2fbe70037d2bd
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
 Patch2:		%{name}-kernel.patch
