@@ -16,6 +16,7 @@ BuildRequires:	flex
 BuildRequires:	kernel-headers
 Requires:	kernel-mol
 Requires:	dev >= 2.8.0-24
+ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
