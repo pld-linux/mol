@@ -136,16 +136,16 @@ if [ "$1" = "0" ]; then
 fi
 							
 %post	-n kernel-%{name}
-/sbin/depmod -a -F /boot/System.map-%{_kernel_ver} %{_kernel_ver}
+/sbin/depmod -a %{!?_without_dist_kernel:-F /boot/System.map-%{_kernel_ver} }%{_kernel_ver}
 
 %postun -n kernel-%{name}
-/sbin/depmod -a -F /boot/System.map-%{_kernel_ver} %{_kernel_ver}
+/sbin/depmod -a %{!?_without_dist_kernel:-F /boot/System.map-%{_kernel_ver} }%{_kernel_ver}
 
 %post	-n kernel-smp-%{name}
-/sbin/depmod -a -F /boot/System.map-%{_kernel_ver}smp %{_kernel_ver}smp
+/sbin/depmod -a %{!?_without_dist_kernel:-F /boot/System.map-%{_kernel_ver}smp }%{_kernel_ver}smp
 
 %postun -n kernel-smp-%{name}
-/sbin/depmod -a -F /boot/System.map-%{_kernel_ver}smp %{_kernel_ver}smp
+/sbin/depmod -a %{!?_without_dist_kernel:-F /boot/System.map-%{_kernel_ver}smp }%{_kernel_ver}smp
 
 %files
 %defattr(644,root,root,755)
