@@ -1,0 +1,11 @@
+--- mol/src/drivers/usbdev.c.orig	2004-01-10 12:49:40.000000000 +0100
++++ mol/src/drivers/usbdev.c	2004-01-10 13:04:36.000000000 +0100
+@@ -23,7 +23,7 @@
+ #include <signal.h>
+ #include <sys/ioctl.h>
+ #include <dirent.h>
+-#include <linux/compiler.h>				/* linux/usbdevice_fs.h breaks otherwise */
++#include "compiler.h"				/* linux/usbdevice_fs.h breaks otherwise */
+ #include <linux/usbdevice_fs.h>
+ #include "poll.h"
+ #include "async.h"
