@@ -1,0 +1,24 @@
+diff -Naur mol-0.9.63.orig/src/debugger/deb/cmdline.c mol-0.9.63/src/debugger/deb/cmdline.c
+--- mol-0.9.63.orig/src/debugger/deb/cmdline.c	Wed May  1 17:49:41 2002
++++ mol-0.9.63/src/debugger/deb/cmdline.c	Sun Jun 23 23:23:56 2002
+@@ -16,7 +16,7 @@
+ **************************************************************/
+ 
+ #include "mol_config.h"
+-#include <curses.h>
++#include <ncurses/curses.h>
+ #include <stdarg.h>
+ 
+ #include "res_manager.h"
+diff -Naur mol-0.9.63.orig/src/debugger/deb/monitor.c mol-0.9.63/src/debugger/deb/monitor.c
+--- mol-0.9.63.orig/src/debugger/deb/monitor.c	Wed May  1 17:49:40 2002
++++ mol-0.9.63/src/debugger/deb/monitor.c	Sun Jun 23 23:24:05 2002
+@@ -17,7 +17,7 @@
+ 
+ #include "mol_config.h"
+ 
+-#include <curses.h>
++#include <ncurses/curses.h>
+ #include <signal.h>
+ #include <termios.h>
+ #include <stdarg.h>
