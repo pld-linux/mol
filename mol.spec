@@ -4,8 +4,9 @@
 # 
 # Conditional build:
 %bcond_without dist_kernel 	# without distribution kernel packages
+%bcond_without dist_gkh		# without distribution glibc-kernel-headers
 
-%define _snap 031019
+%define _snap 040105
 %define _rel 0.2
 
 %if "%{_snap}" != "0"
@@ -32,6 +33,8 @@ Patch2:		%{name}-kernel.patch
 Patch3:		%{name}-sheepnet.patch
 Patch4:		%{name}-netdriver.patch
 Patch5:		%{name}-libimport.patch
+Patch6:		%{name}-usbdev.patch
+Patch7:		%{name}-gkh.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -107,6 +110,11 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla jader SMP.
 %patch3 -p1 
 %patch4 -p1
 %patch5 -p1
+
+%if %{with dist_gkh}
+%patch6 -p1 
+%patch7 -p1
+%endif
 
 bzip2 -dc %{SOURCE2} | tar -xf - 
 
