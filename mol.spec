@@ -140,7 +140,7 @@ cp -rdp %{_kernelsrcdir}/ .
 
 rm linux/.config 
 cp -f linux/config-smp linux/.config
-(cd linux; make oldconfig)
+cd linux; make oldconfig; cd ..
 
 %{__make} -C scripts 
 %{__make} -C src/kmod CC="%{__cc} -D__KERNEL_SMP" 
