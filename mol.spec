@@ -10,6 +10,7 @@ Release:	0.3
 License:	GPL
 Group:		Applications/Emulators
 Source0:	mol-rsync.tgz
+Source1:	mol.init
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-configure.patch
 URL:		http://www.maconlinux.org/
@@ -96,12 +97,15 @@ mkdir smp
 %install
 rm -rf $RPM_BUILD_ROOT
 
+install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
 install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc
 install -d $RPM_BUILD_ROOT/modules/{up,smp}
 
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT
+
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
 mv -f $RPM_BUILD_ROOT%{_datadir}/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
 mv -f $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/%{_kver} $RPM_BUILD_ROOT/modules/up
@@ -115,7 +119,22 @@ rm -rf $RPM_BUILD_ROOT
 
 %post -n kernel-%{name}
 /sbin/depmod -a
+/sbin/chkconfig --add mol
+if [ -f /var/lock/subsys/mol ]; then
+        /etc/rc.d/init.d/mol stop 1>&2
+        /etc/rc.d/init.d/mol start 1>&2
+else
+	echo "Run \"/etc/rc.d/init.d/mol start\" to load modules"
+fi
 
+%preun 
+if [ "$1" = "0" ]; then
+    if [ -f /var/lock/subsys/mol ]; then
+	/etc/rc.d/init.d/mol stop 1>&2
+    fi
+    /sbin/chkconfig --del mol
+fi
+							
 %postun -n kernel-%{name}
 /sbin/depmod -a
 
@@ -132,8 +151,17 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/*
 %dir %{_mol_libdir}
 %dir %{_mol_libdir}/bin
-%attr(755,root,root) %{_mol_libdir}/bin/*
-#%dir %{_mol_libdir}/modules
+%attr(755,root,root) %{_mol_libdir}/bin/keyremap
+%attr(755,root,root) %{_mol_libdir}/bin/kver_approx
+%attr(755,root,root) %{_mol_libdir}/bin/modload
+%attr(755,root,root) %{_mol_libdir}/bin/symcheck
+%attr(755,root,root) %{_mol_libdir}/bin/symchecker.pl
+%attr(755,root,root) %{_mol_libdir}/bin/mol_uname
+%attr(755,root,root) %{_mol_libdir}/bin/molrcget
+%attr(755,root,root) %{_mol_libdir}/bin/selftest
+%attr(755,root,root) %{_mol_libdir}/bin/startmol
+%attr(4755,root,root) %{_mol_libdir}/bin/mol
+%attr(754,root,root) /etc/rc.d/init.d/mol
 %attr(755,root,root) %{_mol_libdir}/mol.symbols
 %dir %{_mol_datadir}
 %{_mol_datadir}/images
