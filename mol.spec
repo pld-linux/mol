@@ -16,6 +16,7 @@
 %endif
 
 Summary:	Runs MacOS natively on Linux/ppc
+Summary(ja):	Mac On Linux - Linux/ppc ¾å¤Î MacOS ¥Í¥¤¥Æ¥£¥Ö¼Â¹Ô´Ä¶­
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	0.9.69
@@ -63,6 +64,10 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description
 With MOL you can run MacOS under Linux - in full speed! All PowerPC
 versions of MacOS are supported (including MacOSX 10.2).
+
+%description -l ja
+MOL ¤Ï MacOS ¤ò Linux ¾å¤ÇÆ°ºî¤µ¤»¤ë¤³¤È¤¬½ÐÍè¤Þ¤¹¡¥Æ°ºî¤â¹âÂ®¤Ç¤¹¡¥
+¥Ð¡¼¥¸¥ç¥ó 9.2 ¤ò´Þ¤á¡¤PowerPC ÍÑ MacOS ¤ÎÁ´¥Ð¡¼¥¸¥ç¥ó¤¬Æ°ºî¤·¤Þ¤¹¡¥
 
 %description -l pl
 Przy u¿uciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
