@@ -1,13 +1,12 @@
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.63
-Release:	0.3
+Version:	0.9.64
+Release:	0.1
 License:	GPL
 Group:		Applications/Emulators
 Source0:	ftp://ftp.nada.kth.se/pub/home/f95-sry/Public/mac-on-linux/%{name}-%{version}.tgz
 Patch0:		%{name}-curses.patch
-Patch1:		%{name}-mknod.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -45,7 +44,6 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 
 %build
 rm -f missing
@@ -71,7 +69,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %doc $RPM_BUILD_ROOT/moldoc
-%config %{_sysconfdir}/molrc
+%config %{_sysconfdir}/mol/*
 %_mol_localstatedir/nvram.nw
 %{_mandir}/man1/*
 %{_mandir}/man5/*
