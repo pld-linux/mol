@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# mol		This shell script loads mol-specific kernel modules
+#
+# chkconfig:    345  235 69
+#
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# See how we were called.
+case "$1" in
+  start)
+	# Check if the service is already running?
+        if [ ! -f /var/lock/subsys/mol ]; then
+            	msg_starting mol
+		modprobe mol molsymglue
+		modprobe sheep tun ethertap 
+        	RETVAL=$?
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mol
+        else
+	      	msg_already_running mol
+		exit 1
+	fi
+        ;;
+  stop)
+	exit 0
+	;;
+  *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+esac
+
+exit 0
