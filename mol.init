@@ -20,7 +20,8 @@ case "$1" in
 		modprobe mol molsymglue
 		RETVAL=$?
 		modprobe sheep tun ethertap 
-		[ $RETVAL -eq 0 ] && RETVAL=$?
+		RET=$?
+		[ $RETVAL -eq 0 ] && RETVAL=$RET
 		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mol
 	else
 		msg_already_running mol
