@@ -1,4 +1,5 @@
 Summary:	Runs MacOS natively on Linux/ppc
+Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	0.9.63
 Release:	0.3
@@ -7,7 +8,7 @@ Group:		Applications/Emulators
 Source0:	ftp://ftp.nada.kth.se/pub/home/f95-sry/Public/mac-on-linux/%{name}-%{version}.tgz
 Patch0:		%{name}-curses.patch
 Patch1:		%{name}-mknod.patch
-URL:		http://www.maconlinux.org
+URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	bison
@@ -19,14 +20,24 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 With MOL you can run MacOS under Linux - in full speed! All PowerPC
 versions of MacOS are supported (including MacOS 9.2).
 
+%description -l pl
+Przy u¿uciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
+szybko¶ci±! Obs³ugiwane s± wszystkie wersje PowerPC MacOS-a (w³±cznie
+z MacOS 9.2).
+
 %package -n kernel-mol
 Summary:	Mac-on-Linux kernel modules
+Summary(pl):	Modu³y j±dra Mac-on-Linux
 Group:		Applications/Emulators
 ExclusiveArch:	ppc
 
 %description -n kernel-mol
 This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking).
+
+%description -n kernel-mol -l pl
+Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
+tak¿e modu³ j±dra sheep_net (dla sieci).
 
 %prep
 %setup -q
