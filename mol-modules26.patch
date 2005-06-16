@@ -1,0 +1,123 @@
+diff -ur mol-0.9.70.orig/src/kmod/Linux/Makefile mol-0.9.70.new/src/kmod/Linux/Makefile
+--- mol-0.9.70.orig/src/kmod/Linux/Makefile	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.new/src/kmod/Linux/Makefile	2005-05-08 17:28:17.000000000 +0000
+@@ -55,18 +55,18 @@
+ 	@ln -sf $(ARCHINCLUDES)/molversion.h ../build/
+ 
+ all-local: setup-common
+-	@$(DEPS_$(LV)) > /dev/null 2>&1 || ( echo "$(DEPS_$(LV))" ; $(DEPS_$(LV)) ; exit 1 ; )
+-	@{ $(MAKE) --no-print-directory -C $(KERNEL_SOURCE) $(BUILD) || exit $$? ; } $(KILL_WARNING_$(LV))
+-	@../build/checker.pl $(MOD_TARGET) || (echo "checker.pl failed" ; rm $(MOD_TARGET) ; exit 1)
++	#@$(DEPS_$(LV)) > /dev/null 2>&1 || ( echo "$(DEPS_$(LV))" ; $(DEPS_$(LV)) ; exit 1 ; )
++	#@{ $(MAKE) --no-print-directory -C $(KERNEL_SOURCE) $(BUILD) || exit $$? ; } $(KILL_WARNING_$(LV))
++	#@../build/checker.pl $(MOD_TARGET) || (echo "checker.pl failed" ; rm $(MOD_TARGET) ; exit 1)
+ #	$(STRIP) -g build mol.o
+ 
+-	@printf "    %-29s : %s\n" "Kernel source" "$(KERNEL_SOURCE)"
+-	@printf "    %-29s : %s\n" "Module compiled for" "$(KUNAME)"
+-	@printf "    %-29s : %s\n" "Running kernel" \
+-		"`$(top_srcdir)/scripts/mol_uname -p`"
++	#@printf "    %-29s : %s\n" "Kernel source" "$(KERNEL_SOURCE)"
++	#@printf "    %-29s : %s\n" "Module compiled for" "$(KUNAME)"
++	#@printf "    %-29s : %s\n" "Running kernel" \
++	#	"`$(top_srcdir)/scripts/mol_uname -p`"
+ 
+-	$(INSTALL) -d $(top_srcdir)/mollib/modules/$(KUNAME)
+-	ln -f $(MOD_TARGET) $(top_srcdir)/mollib/modules/$(KUNAME)/
++	#$(INSTALL) -d $(top_srcdir)/mollib/modules/$(KUNAME)
++	#ln -f $(MOD_TARGET) $(top_srcdir)/mollib/modules/$(KUNAME)/
+ 
+ 
+ clean-local:
+diff -ur mol-0.9.70.orig/src/kmod/Linux/Makefile.26 mol-0.9.70.new/src/kmod/Linux/Makefile.26
+--- mol-0.9.70.orig/src/kmod/Linux/Makefile.26	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.new/src/kmod/Linux/Makefile.26	2005-05-08 19:16:44.000000000 +0000
+@@ -1,5 +1,8 @@
+ # -*- makefile -*-
+ 
++CFLAGS		+= -I./include -I@KERNEL_SRC@/include/ -I@KERNEL_SRC@/include/linux -D__KERNEL__
++INCLUDES	+= -I./include -I@KERNEL_SRC@/include/ -I@KERNEL_SRC@/include/linux -D__KERNEL__
++
+ PERFOBJS_	:= _fault.o _dev.o _misc.o _mmu.o init.o emu.o mmu.o \
+ 		   mmu_fb.o mmu_io.o mmu_tracker.o skiplist.o mtable.o \
+ 		   fault.o context.o ptaccess.o misc.o _traps.o hook.o \
+@@ -14,6 +17,8 @@
+ 
+ $(obj)/hook.o: 		$(src)/reloc_table.h
+ $(obj)/_traps.o:	$(src)/asm_offsets.h $(src)/traps.S $(src)/*.S
++$(obj)/_performance.o:		$(src)/_performance.c
++	$(CC) $(CFLAGS) -c -o $@ $<
+ 
+ $(obj)/_fault.o: $(src)/.kuname
+ $(src)/.kuname: $(obj)/_kuname.o
+Only in mol-0.9.70.new/src/kmod/Linux: Makefile.26~
+diff -ur mol-0.9.70.orig/src/kmod/Linux/alloc.h mol-0.9.70.new/src/kmod/Linux/alloc.h
+--- mol-0.9.70.orig/src/kmod/Linux/alloc.h	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.new/src/kmod/Linux/alloc.h	2005-05-09 13:27:54.000000000 +0000
+@@ -21,6 +21,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/mm.h>
+ #include <asm/uaccess.h>
++#include <asm/io.h>
+ 
+ #ifdef LINUX_26
+ #include <asm/cacheflush.h>
+Only in mol-0.9.70.new/src/kmod/Linux: alloc.h~
+diff -ur mol-0.9.70.orig/src/kmod/Linux/dev.c mol-0.9.70.new/src/kmod/Linux/dev.c
+--- mol-0.9.70.orig/src/kmod/Linux/dev.c	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.new/src/kmod/Linux/dev.c	2005-05-09 13:28:27.000000000 +0000
+@@ -22,6 +22,7 @@
+ #include <linux/init.h>
+ #include <asm/atomic.h>
+ #include <asm/prom.h>
++#include <asm/io.h>
+ #include "kernel_vars.h"
+ #include "mol-ioctl.h"
+ #include "version.h"
+Only in mol-0.9.70.new/src/kmod/Linux: dev.c~
+diff -ur mol-0.9.70.orig/src/netdriver/Makefile mol-0.9.70.new/src/netdriver/Makefile
+--- mol-0.9.70.orig/src/netdriver/Makefile	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.new/src/netdriver/Makefile	2005-05-08 17:26:33.000000000 +0000
+@@ -31,15 +31,15 @@
+ # modules and by deleting them in the all-local target.
+ 
+ all-local: setup-tree-$(LV)
+-	@$(MAKE) --no-print-directory -C $(KERNEL_SOURCE) "SUBDIRS=$$PWD/build" \
+-		BUILD_SHEEP=$(CONFIG_SHEEP:y=m) BUILD_TAP=$(CONFIG_TAP:y=m) \
+-		BUILD_TUN=$(CONFIG_TUN:y=m) \
+-		modules $(KILL_WARNING_$(LV))
+-	@for x in tun ethertap sheep ; do \
+-		[ -f build/$$x.$(MP) ] || continue ; \
+-		$(NM) build/$$x.$(MP) | grep -q init_module || continue ; \
+-		ln -f build/$$x.$(MP) $(MOD_DEST)/ || exit 1 ; \
+-	done
++	#@$(MAKE) --no-print-directory -C $(KERNEL_SOURCE) "SUBDIRS=$$PWD/build" \
++	#	BUILD_SHEEP=$(CONFIG_SHEEP:y=m) BUILD_TAP=$(CONFIG_TAP:y=m) \
++	#	BUILD_TUN=$(CONFIG_TUN:y=m) \
++	#	modules $(KILL_WARNING_$(LV))
++	#@for x in tun ethertap sheep ; do \
++	#	[ -f build/$$x.$(MP) ] || continue ; \
++	#	$(NM) build/$$x.$(MP) | grep -q init_module || continue ; \
++	#	ln -f build/$$x.$(MP) $(MOD_DEST)/ || exit 1 ; \
++	#done
+ 
+ #@$(STRIP) -g $(MOD_DEST)/$$x.$(MP)
+ 
+diff -ur mol-0.9.70.orig/src/netdriver/Makefile.26 mol-0.9.70.new/src/netdriver/Makefile.26
+--- mol-0.9.70.orig/src/netdriver/Makefile.26	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.new/src/netdriver/Makefile.26	2005-05-08 17:27:03.000000000 +0000
+@@ -3,10 +3,10 @@
+ obj-$(BUILD_SHEEP)	+= sheep.o
+ obj-$(BUILD_TAP)	+= ethertap.o
+ obj-$(BUILD_TUN)	+= tun.o
+-obj-m			+= kuname.o
++#obj-m			+= kuname.o
+ 
+ 
+-$(obj)/sheep.o $(obj)/ethertap.o $(obj)tun.o: $(src)/.kuname
++#$(obj)/sheep.o $(obj)/ethertap.o $(obj)tun.o: $(src)/.kuname
+ 
+ $(src)/.kuname: $(obj)/kuname.o
+ 	strings $< | grep -- '-MAGIC-' | sed -e s/-MAGIC-// > $@
+Only in mol-0.9.70.new/src/netdriver: Makefile.26~
+Only in mol-0.9.70.new/src/netdriver: Makefile~
