@@ -1,62 +1,57 @@
 #
 # TODO:
-# 2.6 kernel support
+#  - building without userspace (make in userspace is preparing files
+#    for module building)
+#  - scripts should search for modules in /lib/moduiles
 # 
 # Conditional build:
-%bcond_without dist_kernel 	# without distribution kernel packages
-%bcond_without dist_gkh		# without distribution glibc-kernel-headers
+%bcond_without	dist_kernel	# without distribution kernel
+%bcond_without	kernel		# don't build kernel modules
+%bcond_without	smp		# don't build SMP module
+%bcond_with	verbose		# verbose build (V=1)
+#%%bcond_without	userspace	# don't build userspace tools
+%bcond_with	minimal		# no X, no sound
+%bcond_without	debugger	# no debugger
 
-%define _snap 040110
-%define _rel 0.2
-
-%if "%{_snap}" != "0"
-%define snapshot snap%{_snap}.rel
-%else
-%define snapshot %{nil}
-%endif
-
+%define _rel	0.1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc ¾å¤Î MacOS ¥Í¥¤¥Æ¥£¥Ö¼Â¹Ô´Ä¶­
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.69
-Release:	%{snapshot}%{_rel}
+Version:	0.9.70
+Release:	%{_rel}
 License:	GPL
 Group:		Applications/Emulators
-Source0:	mol-%{_snap}.tar.bz2
-# Source0-md5:	afb3c0fe9deff7c3a0d006ea8f80afa8
-Source1:	mol.init
-Source2:	libimport-%{_snap}.tar.bz2
-# Source2-md5:	14fa728f6a6f0596d0aa4c0247d233cf
-Patch0:		%{name}-curses.patch
-Patch1:		%{name}-configure.patch
-Patch2:		%{name}-kernel.patch
-Patch3:		%{name}-sheepnet.patch
-Patch4:		%{name}-netdriver.patch
-Patch5:		%{name}-libimport.patch
-Patch6:		%{name}-usbdev.patch
-Patch7:		%{name}-gkh.patch
-Patch8:		%{name}-gkh-compiler_h.patch
-Patch9:		%{name}-gkh-includes.patch
+Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
+# Source0-md5:	bfdd0bd6ae01018b5c46f87d4ad879f1
+#Source1:	mol.init
+Patch0:		%{name}-modules26.patch
+#Patch0:		%{name}-curses.patch
+#Patch1:		%{name}-configure.patch
+#Patch2:		%{name}-kernel.patch
+#Patch3:		%{name}-sheepnet.patch
+#Patch4:		%{name}-netdriver.patch
+#Patch5:		%{name}-libimport.patch
+#Patch6:		%{name}-usbdev.patch
+#Patch7:		%{name}-gkh.patch
+#Patch8:		%{name}-gkh-compiler_h.patch
+#Patch9:		%{name}-gkh-includes.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	bison
-BuildRequires:	flex
+#BuildRequires:	bison
+#BuildRequires:	flex
 BuildRequires:	ncurses-devel
 BuildRequires:	bzip2
 BuildRequires:	rpmbuild(macros) >= 1.118
-%{?with_dist_kernel:BuildRequires:	kernel-headers}
-%{?with_dist_kernel:BuildRequires:	kernel-source}
+#%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 2.6.7}
 Requires(post,preun):	/sbin/chkconfig
 Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define _bdir %{name}-%{version}
-%define _kver %(echo %{_kernel_ver} | cut -d- -f1)
 %define _mol_libdir 		%{_libdir}/mol/%{version}
 %define _mol_datadir 		%{_datadir}/mol/%{version}
 %define _mol_localstatedir	/var/lib/mol
@@ -78,7 +73,7 @@ z MacOSX 10.2).
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Group:		Applications/Emulators
-Release:	%{snapshot}%{_rel}@%{_kernel_ver_str}
+Release:	%{_rel}@%{_kernel_ver_str}
 Requires(post,postun):	/sbin/depmod
 Obsoletes:	kernel-mol
 Provides:	kernel(mol)
@@ -95,9 +90,9 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Group:		Applications/Emulators
-Release:	%{snapshot}%{_rel}@%{_kernel_ver_str}
+Release:	%{_rel}@%{_kernel_ver_str}
 Requires(post,postun):	/sbin/depmod
-Obsoletes:	kernel-mol
+#Obsoletes:	kernel-mol
 Provides:	kernel(mol)
 
 %description -n kernel-smp-%{name}
@@ -110,118 +105,189 @@ Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 
 %prep
-%setup -q -n mol
+%setup -q
+chmod +w -R .
 %patch0 -p1
-%patch1 -p1
-%patch2 -p1
-#%patch3 -p1 
-%patch4 -p1
-%patch5 -p1
+sed -i 's|@KERNEL_SRC@|%{_kernelsrcdir}|g' src/kmod/Linux/Makefile.26
 
-%if %{with dist_gkh}
-%patch6 -p1 
-%patch7 -p1
-%patch8 -p1 
-%patch9 -p1
+cat << EOF | sed 's/^ *//' > config/defconfig-ppc
+    CONFIG_PPC=y
+    CONFIG_FBDEV=y
+%if %{without minimal}
+    CONFIG_OLDWORLD=y
+    CONFIG_X11=y
+    CONFIG_VNC=y
+    CONFIG_XDGA=y
+    CONFIG_ALSA=y
+    CONFIG_OSS=y
+    CONFIG_USBDEV=y
+    CONFIG_TTYDRIVER=y
+%else
+    # CONFIG_OLDWORLD is not set
+    # CONFIG_X11 is not set
+    # CONFIG_VNC is not set
+    # CONFIG_XDGA is not set
+    # CONFIG_ALSA is not set
+    # CONFIG_OSS is not set
+    # CONFIG_USBDEV is not set
+    # CONFIG_TTYDRIVER is not set
+%endif
+%if %{with debugger}
+    CONFIG_DEBUGGER=y
+%else
+    # CONFIG_DEBUGGER is not set
 %endif
 
-bzip2 -dc %{SOURCE2} | tar -xf - 
+    ### Network drivers
+    CONFIG_TUN=y
+    CONFIG_TAP=y
+    # CONFIG_SHEEP is not set
+
+EOF
 
 %build
-rm -f missing
-rm -f acinclude.m4
-mkdir scripts/buildtools
-%{__aclocal} -I . 2>/dev/null
-echo "AC_DEFUN([AM_PROG_AS],[])" > acinclude.m4
 %{__autoheader}
-%{__automake} -a -c 
 %{__autoconf}
 
-export KERNEL_SOURCE=`pwd`/linux/
-cp -rdp %{_kernelsrcdir}/ .
+CFLAGS="%{rpmcflags} -I/usr/include/ncurses"; export CFLAGS
 
-%configure --enable-fhs --enable-debugger --disable-tap --disable-tun
-%{__make} clean
-
-rm linux/.config 
-cp -f linux/config-smp linux/.config
-cd linux; make oldconfig; cd ..
-
-%{__make} -C scripts 
-%{__make} -C src/kmod CC="%{__cc} -D__KERNEL_SMP" 
-%{__make} -C src/netdriver CC="%{__cc} -D__KERNEL_SMP" 
-mkdir smp
-cp -f src/kmod/build/mol.o smp
-cp -f src/netdriver/build/sheep.o smp
-
-rm linux/.config
-cp -f linux/config-up linux/.config
-cd linux; make oldconfig; cd ..
+%configure \
+%if %{without minimal}
+	--with-x	\
+	--enable-alsa	\
+	--enable-xdga	\
+	--enable-png
+%endif
 
 %{__make} clean
-%{__make}
+%{__make} defconfig
+%{__make} \
+	prefix=%{_prefix}
+
+
+cd src/kmod/build
+for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
+	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
+		exit 1
+	fi
+	rm -rf include
+	install -d include/{linux,config}
+	ln -sf %{_kernelsrcdir}/config-$cfg .config
+	ln -sf %{_kernelsrcdir}/include/linux/autoconf-$cfg.h include/linux/autoconf.h
+	ln -sf %{_kernelsrcdir}/include/asm-%{_target_base_arch} include/asm
+	touch include/config/MARKER
+
+	%{__make} -C %{_kernelsrcdir} clean \
+		%{?with_verbose:V=1} \
+		RCS_FIND_IGNORE="-name '*.ko' -o" \
+		M=$PWD O=$PWD
+	%{__make} -C %{_kernelsrcdir} modules \
+		%{?with_verbose:V=1} \
+		M=$PWD O=$PWD obj=. src=.
+	mv mol.ko mol-$cfg.ko
+done
+
+# Sheep don´t builds and other modules already in kernel
+#cd ../../netdriver/build
+#for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
+#	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
+#		exit 1
+#	fi
+#	rm -rf include
+#	install -d include/{linux,config}
+#	ln -sf %{_kernelsrcdir}/config-$cfg .config
+#	ln -sf %{_kernelsrcdir}/include/linux/autoconf-$cfg.h include/linux/autoconf.h
+#	ln -sf %{_kernelsrcdir}/include/asm-%{_target_base_arch} include/asm
+#	touch include/config/MARKER
+#
+#	%{__make} -C %{_kernelsrcdir} clean \
+#		%{?with_verbose:V=1} \
+#		RCS_FIND_IGNORE="-name '*.ko' -o" \
+#		M=$PWD O=$PWD
+#	%{__make} -C %{_kernelsrcdir} modules \
+#		%{?with_verbose:V=1} \
+#		M=$PWD O=$PWD obj=. src=. \
+#		BUILD_SHEEP=m	\
+#		BUILD_TAP=n	\
+#		BUILD_TUN=n
+#	mv sheep.ko sheep-$cfg.ko
+#done
+cd ../../..
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
-install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc
-install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc
-install -d $RPM_BUILD_ROOT/modules/{up,smp}
-
-for x in graphics drivers images nvram ; do
-    test -d mollib/$x || mkdir mollib/$x
-done
-		
-scripts/libimport copy 
+#install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
 
 %{__make} install \
-	DESTDIR=$RPM_BUILD_ROOT
+	DESTDIR=$RPM_BUILD_ROOT \
+	prefix=%{_prefix}	\
+	docdir=/moldoc
 
-install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
+#install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
 
-mv -f $RPM_BUILD_ROOT%{_datadir}/doc/mol-%{version} $RPM_BUILD_ROOT/moldoc
-mv -f $RPM_BUILD_ROOT%{_libdir}/mol/%{version}/modules/%{_kver} $RPM_BUILD_ROOT/modules/up
-cp -r smp/ $RPM_BUILD_ROOT/modules/
-mv -f $RPM_BUILD_ROOT/modules/smp/{mol.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/
-mv -f $RPM_BUILD_ROOT/modules/up/%{_kver}/{mol.o,sheep.o} $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/
+%if %{with kernel}
+cd src
+install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}{,smp}/misc
+install kmod/build/mol-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
+	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/mol.ko
+#install netdriver/build/ethertap-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
+#	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/ethertap.ko
+#install netdriver/build/tun-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
+#	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/tun.ko
+%if %{with smp} && %{with dist_kernel}
+install kmod/build/mol-smp.ko \
+	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/mol.ko
+#install netdriver/build/ethertap-smp.ko \
+#	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/ethertap.ko
+#install netdriver/build/tun-smp.ko \
+#	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/tun.ko
+%endif
+cd ..
+%endif
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post
-/sbin/chkconfig --add mol
-if [ -f /var/lock/subsys/mol ]; then
-	/etc/rc.d/init.d/mol stop 1>&2
-	/etc/rc.d/init.d/mol start 1>&2
-else
-	echo "Run \"/etc/rc.d/init.d/mol start\" to load modules"
-fi
+#%post
+#/sbin/chkconfig --add mol
+#if [ -f /var/lock/subsys/mol ]; then
+#	/etc/rc.d/init.d/mol stop 1>&2
+#	/etc/rc.d/init.d/mol start 1>&2
+#else
+#	echo "Run \"/etc/rc.d/init.d/mol start\" to load modules"
+#fi
 
-%preun
-if [ "$1" = "0" ]; then
-	if [ -f /var/lock/subsys/mol ]; then
-		/etc/rc.d/init.d/mol stop 1>&2
-	fi
-	/sbin/chkconfig --del mol
-fi
+#%preun
+#if [ "$1" = "0" ]; then
+#	if [ -f /var/lock/subsys/mol ]; then
+#		/etc/rc.d/init.d/mol stop 1>&2
+#	fi
+#	/sbin/chkconfig --del mol
+#fi
 
+%if %{with kernel}
 %post	-n kernel-%{name}
 %depmod %{_kernel_ver}
 
 %postun -n kernel-%{name}
 %depmod %{_kernel_ver}
 
+%if %{with smp} && %{with dist_kernel}
 %post	-n kernel-smp-%{name}
 %depmod %{_kernel_ver}smp
 
 %postun -n kernel-smp-%{name}
 %depmod %{_kernel_ver}smp
+%endif
+%endif
 
 %files
 %defattr(644,root,root,755)
 %doc $RPM_BUILD_ROOT/moldoc/*
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/mol/*
+%dir %{_sysconfdir}/mol
+%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/mol/[!t]*
+%attr(755,root,root) %{_sysconfdir}/mol/tunconfig
 %attr(755,root,root) %{_bindir}/*
 %dir %{_mol_libdir}
 %dir %{_mol_libdir}/bin
@@ -233,7 +299,10 @@ fi
 %attr(755,root,root) %{_mol_libdir}/bin/selftest
 %attr(755,root,root) %{_mol_libdir}/bin/startmol
 %attr(4755,root,root) %{_mol_libdir}/bin/mol
-%attr(754,root,root) /etc/rc.d/init.d/mol
+%if %{with debugger}
+%attr(755,root,root) %{_mol_libdir}/bin/moldeb
+%endif
+#%attr(754,root,root) /etc/rc.d/init.d/mol
 %attr(755,root,root) %{_mol_libdir}/mol.symbols
 %dir %{_mol_datadir}
 %{_mol_datadir}/images
@@ -250,10 +319,14 @@ fi
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 
+%if %{with kernel}
 %files -n kernel-%{name}
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/misc/*
 
+%if %{with smp} && %{with dist_kernel}
 %files -n kernel-smp-%{name}
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}smp/misc/*
+%endif
+%endif
