@@ -4,7 +4,7 @@
 #
 # chkconfig:	345 235 69
 #
-# description:	mol Mac-On-Linux 
+# description:	mol Mac-On-Linux
 #
 
 # Source function library.
@@ -19,12 +19,12 @@ case "$1" in
 		msg_starting mol
 		modprobe mol
 		RETVAL=$?
-		modprobe sheep 
-		modprobe tun 
-		modprobe ethertap 
+		modprobe sheep
+		modprobe tun
+		modprobe ethertap
 		RET=$?
 		[ $RETVAL -eq 0 ] && RETVAL=$RET
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mol && ok || fail 
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mol && ok || fail
 	else
 		msg_already_running mol
 	fi
@@ -32,15 +32,15 @@ case "$1" in
   stop)
 	if [ -f /var/lock/subsys/mol ]; then
 		msg_stopping mol
-		rmmod sheep 
-		rmmod tun 
+		rmmod sheep
+		rmmod tun
 		rmmod ethertap
 		rmmod mol
 		killproc mol
 		rm -f /var/lock/subsys/mol >/dev/null 2>&1
 	else
 		msg_not_running mol
-	fi	
+	fi
 	;;
   status)
 	if [ `lsmod | grep '^mol \|^sheep \|^tun\|^ethertap' | wc -l` -eq 4 ]; then
