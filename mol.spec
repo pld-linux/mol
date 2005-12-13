@@ -3,7 +3,7 @@
 #  - building without userspace (make in userspace is preparing files
 #    for module building)
 #  - scripts should search for modules in /lib/moduiles
-# 
+#
 # Conditional build:
 %bcond_without	dist_kernel	# without distribution kernel
 %bcond_without	kernel		# don't build kernel modules
@@ -37,18 +37,18 @@ Patch0:		%{name}-modules26.patch
 #Patch8:		%{name}-gkh-compiler_h.patch
 #Patch9:		%{name}-gkh-includes.patch
 URL:		http://www.maconlinux.org/
+#BuildRequires:	bison
+#BuildRequires:	flex
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
-#BuildRequires:	bison
-#BuildRequires:	flex
-BuildRequires:	ncurses-devel
 BuildRequires:	bzip2
-BuildRequires:	rpmbuild(macros) >= 1.118
 #%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 2.6.7}
+BuildRequires:	ncurses-devel
+BuildRequires:	rpmbuild(macros) >= 1.118
 Requires(post,preun):	/sbin/chkconfig
-Requires:	kernel(mol)
 Requires:	dev >= 2.8.0-24
+Requires:	kernel(mol)
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -288,7 +288,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %doc $RPM_BUILD_ROOT/moldoc/*
 %dir %{_sysconfdir}/mol
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/mol/[!t]*
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/mol/[!t]*
 %attr(755,root,root) %{_sysconfdir}/mol/tunconfig
 %attr(755,root,root) %{_bindir}/*
 %dir %{_mol_libdir}
