@@ -109,6 +109,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 chmod +w -R .
 %patch0 -p1
 sed -i 's|@KERNEL_SRC@|%{_kernelsrcdir}|g' src/kmod/Linux/Makefile.26
+sed -i '/struct menu \*current_menu/s/static//' config/kconfig/mconf.c
 
 cat << EOF | sed 's/^ *//' > config/defconfig-ppc
     CONFIG_PPC=y
@@ -149,7 +150,7 @@ EOF
 %{__autoheader}
 %{__autoconf}
 
-CFLAGS="%{rpmcflags} -I/usr/include/ncurses"; export CFLAGS
+CFLAGS="%{rpmcflags} -I/usr/include/ncurses -DNETLINK_TAPBASE=16"; export CFLAGS
 
 %configure \
 %if %{without minimal}
@@ -164,7 +165,6 @@ CFLAGS="%{rpmcflags} -I/usr/include/ncurses"; export CFLAGS
 %{__make} \
 	prefix=%{_prefix}
 
-
 cd src/kmod/build
 for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
 	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
@@ -174,7 +174,13 @@ for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
 	install -d include/{linux,config}
 	ln -sf %{_kernelsrcdir}/config-$cfg .config
 	ln -sf %{_kernelsrcdir}/include/linux/autoconf-$cfg.h include/linux/autoconf.h
-	ln -sf %{_kernelsrcdir}/include/asm-%{_target_base_arch} include/asm
+	if [ -d "%{_kernelsrcdir}/include/asm-powerpc" ]; then
+		install -d include/asm
+		cp -a %{_kernelsrcdir}/include/asm-%{_target_base_arch}/* include/asm
+		cp -a %{_kernelsrcdir}/include/asm-powerpc/* include/asm
+	else
+		ln -sf %{_kernelsrcdir}/include/asm-powerpc include/asm
+	fi
 	ln -sf %{_kernelsrcdir}/Module.symvers-$cfg Module.symvers
 	touch include/config/MARKER
 
@@ -184,7 +190,7 @@ for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
 		M=$PWD O=$PWD
 	%{__make} -C %{_kernelsrcdir} modules \
 		%{?with_verbose:V=1} \
-		M=$PWD O=$PWD obj=. src=.
+		M=$PWD O=$PWD
 	mv mol.ko mol-$cfg.ko
 done
 
