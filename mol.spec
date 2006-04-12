@@ -26,24 +26,23 @@ Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
 # Source0-md5:	bfdd0bd6ae01018b5c46f87d4ad879f1
 #Source1:	mol.init
 Patch0:		%{name}-modules26.patch
-#Patch0:		%{name}-curses.patch
-#Patch1:		%{name}-configure.patch
-#Patch2:		%{name}-kernel.patch
-#Patch3:		%{name}-sheepnet.patch
-#Patch4:		%{name}-netdriver.patch
-#Patch5:		%{name}-libimport.patch
-#Patch6:		%{name}-usbdev.patch
-#Patch7:		%{name}-gkh.patch
-#Patch8:		%{name}-gkh-compiler_h.patch
-#Patch9:		%{name}-gkh-includes.patch
+#Patch0:	%{name}-curses.patch
+#Patch1:	%{name}-configure.patch
+#Patch2:	%{name}-kernel.patch
+#Patch3:	%{name}-sheepnet.patch
+#Patch4:	%{name}-netdriver.patch
+#Patch5:	%{name}-libimport.patch
+#Patch6:	%{name}-usbdev.patch
+#Patch7:	%{name}-gkh.patch
+#Patch8:	%{name}-gkh-compiler_h.patch
+#Patch9:	%{name}-gkh-includes.patch
 URL:		http://www.maconlinux.org/
-#BuildRequires:	bison
-#BuildRequires:	flex
 BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
-BuildRequires:	bzip2
-#%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 2.6.7}
+#BuildRequires:	bison
+#BuildRequires:	flex
+#%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.7}
 BuildRequires:	ncurses-devel
 BuildRequires:	rpmbuild(macros) >= 1.118
 Requires(post,preun):	/sbin/chkconfig
@@ -72,11 +71,11 @@ z MacOSX 10.2).
 %package -n kernel-%{name}
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
-Group:		Applications/Emulators
 Release:	%{_rel}@%{_kernel_ver_str}
+Group:		Applications/Emulators
 Requires(post,postun):	/sbin/depmod
-Obsoletes:	kernel-mol
 Provides:	kernel(mol)
+Obsoletes:	kernel-mol
 
 %description -n kernel-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
@@ -89,11 +88,11 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 %package -n kernel-smp-%{name}
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
-Group:		Applications/Emulators
 Release:	%{_rel}@%{_kernel_ver_str}
+Group:		Applications/Emulators
 Requires(post,postun):	/sbin/depmod
-#Obsoletes:	kernel-mol
 Provides:	kernel(mol)
+#Obsoletes:	kernel-mol
 
 %description -n kernel-smp-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
