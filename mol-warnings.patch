@@ -1,0 +1,72 @@
+diff -Nur mol-0.9.70.orig/Makefile.top mol-0.9.70.warnings/Makefile.top
+--- mol-0.9.70.orig/Makefile.top	2004-03-27 11:04:27.000000000 +0000
++++ mol-0.9.70.warnings/Makefile.top	2006-09-29 13:20:43.000000000 +0000
+@@ -56,8 +56,8 @@
+ _bindir		= $(DESTDIR)$(bindir)
+ _docdir		= $(DESTDIR)$(docdir)
+ 
+-IDIRS		= -I. -I$(ARCHINCLUDES) -I./include -I$(srcdir)/shared \
+-		  -I$(srcdir)/include $(INCLUDES) -I-
++IDIRS		= -iquote . -iquote $(ARCHINCLUDES) -iquote ./include -iquote $(srcdir)/shared \
++		  -iquote $(srcdir)/include $(INCLUDES)
+ 
+ all:
+ 
+diff -Nur mol-0.9.70.orig/configure.in mol-0.9.70.warnings/configure.in
+--- mol-0.9.70.orig/configure.in	2004-03-27 11:04:28.000000000 +0000
++++ mol-0.9.70.warnings/configure.in	2006-09-29 13:20:11.000000000 +0000
+@@ -135,7 +135,7 @@
+    ########### XDGA #############
+    CFLAGS_BAK="$CFLAGS"
+    AC_MSG_CHECKING([for working XDGA headers])
+-   CFLAGS="$CFLAGS -I. -I- $X_CFLAGS"
++   CFLAGS="$CFLAGS -iquote . $X_CFLAGS"
+    AC_TRY_COMPILE([
+ 	#include <X11/Xlib.h>
+ 	#include <X11/extensions/xf86dga.h>],[], XDGA=yes, XDGA=no)
+@@ -143,7 +143,7 @@
+    AC_MSG_RESULT($XDGA)
+    if test "$XDGA" = no ; then
+       XDGA_CFLAGS=`echo $X_CFLAGS | sed 's/.*-I/-I/ ; s/include.*/include\/X11\/extensions/'`
+-      CFLAGS="$CFLAGS -I. -I- $XDGA_CFLAGS"
++      CFLAGS="$CFLAGS -iquote .  $XDGA_CFLAGS"
+       AC_MSG_CHECKING([whether XDGA workaround works])   
+       AC_TRY_COMPILE([
+ 	#include <X11/Xlib.h>
+diff -Nur mol-0.9.70.orig/src/cpu/mpc107/Makefile.am mol-0.9.70.warnings/src/cpu/mpc107/Makefile.am
+--- mol-0.9.70.orig/src/cpu/mpc107/Makefile.am	2004-03-27 11:04:33.000000000 +0000
++++ mol-0.9.70.warnings/src/cpu/mpc107/Makefile.am	2006-09-29 13:20:11.000000000 +0000
+@@ -10,7 +10,7 @@
+ 
+ noinst_LIBRARIES	= libmain.a
+ 
+-INCLUDES		= -I./ -I../../include -I../../shared -I-
++INCLUDES		= -iquote ./ -iquote ../../include -iquote ../../shared
+ libmain_a_SOURCES	= init.c
+ CLEANFILES		= asm_offsets.h asm_offsets.s asm_offsets.c
+ 
+diff -Nur mol-0.9.70.orig/src/kmod/mpc107/Makefile.mod mol-0.9.70.warnings/src/kmod/mpc107/Makefile.mod
+--- mol-0.9.70.orig/src/kmod/mpc107/Makefile.mod	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.warnings/src/kmod/mpc107/Makefile.mod	2006-09-29 13:20:11.000000000 +0000
+@@ -3,8 +3,8 @@
+ if MPC107
+ 
+ A_CFLAGS		= @CFLAGS@ -Wall -msoft-float -fno-builtin
+-A_INCLUDES		= -D__KERNEL__ -DKERNEL -I$(top_srcdir)/src/kmod/include \
+-			  -I$(top_srcdir)/src/shared -I$(top_srcdir)/src/kmod/mpc107 -I- 
++A_INCLUDES		= -D__KERNEL__ -DKERNEL -iquote $(top_srcdir)/src/kmod/include \
++			  -iquote $(top_srcdir)/src/shared -iquote $(top_srcdir)/src/kmod/mpc107
+ 
+ ###########################################################################
+ # Kernel module generation
+diff -Nur mol-0.9.70.orig/src/main/Darwin/Makefile.am mol-0.9.70.warnings/src/main/Darwin/Makefile.am
+--- mol-0.9.70.orig/src/main/Darwin/Makefile.am	2004-03-27 11:04:35.000000000 +0000
++++ mol-0.9.70.warnings/src/main/Darwin/Makefile.am	2006-09-29 13:20:11.000000000 +0000
+@@ -4,6 +4,6 @@
+ noinst_LIBRARIES	= libmain.a
+ libmain_a_SOURCES	= wrapper.c
+ 
+-INCLUDES		= -I../../include -I../../shared -I-
++INCLUDES		= -iquote ../../include -iquote ../../shared
+ 
+ 
