@@ -50,19 +50,6 @@ diff -ur mol-0.9.70.orig/src/kmod/Linux/Makefile.26 mol-0.9.70.new/src/kmod/Linu
  
  $(obj)/_fault.o: $(src)/.kuname
  $(src)/.kuname: $(obj)/_kuname.o
-Only in mol-0.9.70.new/src/kmod/Linux: Makefile.26~
-diff -ur mol-0.9.70.orig/src/kmod/Linux/alloc.h mol-0.9.70.new/src/kmod/Linux/alloc.h
---- mol-0.9.70.orig/src/kmod/Linux/alloc.h	2004-03-27 11:04:35.000000000 +0000
-+++ mol-0.9.70.new/src/kmod/Linux/alloc.h	2005-05-09 13:27:54.000000000 +0000
-@@ -21,6 +21,7 @@
- #include <linux/vmalloc.h>
- #include <linux/mm.h>
- #include <asm/uaccess.h>
-+#include <asm/io.h>
- 
- #ifdef LINUX_26
- #include <asm/cacheflush.h>
-Only in mol-0.9.70.new/src/kmod/Linux: alloc.h~
 diff -ur mol-0.9.70.orig/src/kmod/Linux/dev.c mol-0.9.70.new/src/kmod/Linux/dev.c
 --- mol-0.9.70.orig/src/kmod/Linux/dev.c	2004-03-27 11:04:35.000000000 +0000
 +++ mol-0.9.70.new/src/kmod/Linux/dev.c	2005-05-09 13:28:27.000000000 +0000
@@ -74,50 +61,3 @@ diff -ur mol-0.9.70.orig/src/kmod/Linux/dev.c mol-0.9.70.new/src/kmod/Linux/dev.
  #include "kernel_vars.h"
  #include "mol-ioctl.h"
  #include "version.h"
-Only in mol-0.9.70.new/src/kmod/Linux: dev.c~
-diff -ur mol-0.9.70.orig/src/netdriver/Makefile mol-0.9.70.new/src/netdriver/Makefile
---- mol-0.9.70.orig/src/netdriver/Makefile	2004-03-27 11:04:35.000000000 +0000
-+++ mol-0.9.70.new/src/netdriver/Makefile	2005-05-08 17:26:33.000000000 +0000
-@@ -31,15 +31,15 @@
- # modules and by deleting them in the all-local target.
- 
- all-local: setup-tree-$(LV)
--	@$(MAKE) --no-print-directory -C $(KERNEL_SOURCE) "SUBDIRS=$$PWD/build" \
--		BUILD_SHEEP=$(CONFIG_SHEEP:y=m) BUILD_TAP=$(CONFIG_TAP:y=m) \
--		BUILD_TUN=$(CONFIG_TUN:y=m) \
--		modules $(KILL_WARNING_$(LV))
--	@for x in tun ethertap sheep ; do \
--		[ -f build/$$x.$(MP) ] || continue ; \
--		$(NM) build/$$x.$(MP) | grep -q init_module || continue ; \
--		ln -f build/$$x.$(MP) $(MOD_DEST)/ || exit 1 ; \
--	done
-+	#@$(MAKE) --no-print-directory -C $(KERNEL_SOURCE) "SUBDIRS=$$PWD/build" \
-+	#	BUILD_SHEEP=$(CONFIG_SHEEP:y=m) BUILD_TAP=$(CONFIG_TAP:y=m) \
-+	#	BUILD_TUN=$(CONFIG_TUN:y=m) \
-+	#	modules $(KILL_WARNING_$(LV))
-+	#@for x in tun ethertap sheep ; do \
-+	#	[ -f build/$$x.$(MP) ] || continue ; \
-+	#	$(NM) build/$$x.$(MP) | grep -q init_module || continue ; \
-+	#	ln -f build/$$x.$(MP) $(MOD_DEST)/ || exit 1 ; \
-+	#done
- 
- #@$(STRIP) -g $(MOD_DEST)/$$x.$(MP)
- 
-diff -ur mol-0.9.70.orig/src/netdriver/Makefile.26 mol-0.9.70.new/src/netdriver/Makefile.26
---- mol-0.9.70.orig/src/netdriver/Makefile.26	2004-03-27 11:04:35.000000000 +0000
-+++ mol-0.9.70.new/src/netdriver/Makefile.26	2005-05-08 17:27:03.000000000 +0000
-@@ -3,10 +3,10 @@
- obj-$(BUILD_SHEEP)	+= sheep.o
- obj-$(BUILD_TAP)	+= ethertap.o
- obj-$(BUILD_TUN)	+= tun.o
--obj-m			+= kuname.o
-+#obj-m			+= kuname.o
- 
- 
--$(obj)/sheep.o $(obj)/ethertap.o $(obj)tun.o: $(src)/.kuname
-+#$(obj)/sheep.o $(obj)/ethertap.o $(obj)tun.o: $(src)/.kuname
- 
- $(src)/.kuname: $(obj)/kuname.o
- 	strings $< | grep -- '-MAGIC-' | sed -e s/-MAGIC-// > $@
-Only in mol-0.9.70.new/src/netdriver: Makefile.26~
-Only in mol-0.9.70.new/src/netdriver: Makefile~
