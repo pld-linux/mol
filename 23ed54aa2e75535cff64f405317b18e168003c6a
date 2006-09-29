@@ -1,0 +1,2 @@
+- replaced "uname -r" with %{_kernel_ver}
+- added missing dirs and _without_dist_kernel bcond
