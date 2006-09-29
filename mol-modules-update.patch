@@ -1,0 +1,339 @@
+--- mol-0.9.70.orig/src/drivers/usbdev.c
++++ mol-0.9.70/src/drivers/usbdev.c
+@@ -14,6 +14,10 @@
+  *   
+  */
+ 
++#ifndef __user
++#define __user
++#endif
++
+ #include "mol_config.h"
+ #include "usb-client.h"
+ #include <signal.h>
+--- mol-0.9.70.orig/src/kmod/Linux/alloc.h
++++ mol-0.9.70/src/kmod/Linux/alloc.h
+@@ -21,6 +21,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/mm.h>
+ #include <asm/uaccess.h>
++#include <asm/io.h>
+ 
+ #ifdef LINUX_26
+ #include <asm/cacheflush.h>
+--- mol-0.9.70.orig/src/kmod/Linux/Makefile.26
++++ mol-0.9.70/src/kmod/Linux/Makefile.26
+@@ -9,7 +9,7 @@
+ obj-m		:= _kuname.o mol.o 
+ 
+ PERFOBJS	= $(addprefix $(obj)/, $(PERFOBJS_))
+-MOL_ASMFLAGS	= $(ASMFLAGS) $(INCLUDES) -D__ASSEMBLY__
++MOL_ASMFLAGS	= $(CPPFLAGS) $(ASMFLAGS) $(INCLUDES) -D__ASSEMBLY__
+ 
+ 
+ $(obj)/hook.o: 		$(src)/reloc_table.h
+@@ -37,9 +37,9 @@
+ $(src)/asm_offsets.h:	$(src)/archinclude.h $(src)/kernel_vars.h $(src)/mac_registers.h
+ $(src)/asm_offsets.h:	$(src)/asm_offsets.c $(src)/asm_offsets.inc
+ 	@$(RM) $(src)/tmp-offsets.c $@ ; cat $^ > $(src)/tmp-offsets.c
+-	@$(CC) $(CFLAGS) -I$(src) -Wall -S $(src)/tmp-offsets.c
++	@$(CC) $(CPPFLAGS) $(CFLAGS) -I$(src) -Wall -S $(src)/tmp-offsets.c -o $(src)/tmp-offsets.s
+ 	@echo "/* WARNING! Automatically generated from 'shared/asm_offsets.c' - DO NOT EDIT! */" > $@
+-	@grep '^#' tmp-offsets.s >> $@
++	@grep '^#' $(src)/tmp-offsets.s >> $@
+ 	@$(RM) $(src)/tmp-offsets.*
+ 
+ 
+--- mol-0.9.70.orig/src/kmod/Linux/dev.c
++++ mol-0.9.70/src/kmod/Linux/dev.c
+@@ -153,7 +153,7 @@
+ 
+ 	switch( cmd ) {
+ 	case MOL_IOCTL_GET_DIRTY_FBLINES:  /* short *retbuf, int size -- npairs */
+-		if( verify_area(VERIFY_WRITE, (short*)p1, p2) )
++		if( compat_verify_area(VERIFY_WRITE, (short*)p1, p2) )
+ 			break;
+ 		ret = get_dirty_fb_lines( kv, (short*)p1, p2 );
+ 		break;
+@@ -188,7 +188,7 @@
+ 		break;
+ 
+ 	case MOL_IOCTL_SET_RAM: /* void ( char *lvbase, size_t size ) */
+-		if( verify_area(VERIFY_WRITE, (char*)p1, p2) )
++		if( compat_verify_area(VERIFY_WRITE, (char*)p1, p2) )
+ 			break;
+ 		kv->mmu.linux_ram_base = (char*)p1;
+ 		kv->mmu.ram_size = p2;
+--- mol-0.9.70.orig/src/kmod/include/misc.h
++++ mol-0.9.70/src/kmod/include/misc.h
+@@ -17,6 +17,21 @@
+ #ifndef _H_MOD
+ #define _H_MOD
+ 
++/*
++ *  * Nico
++ *  */
++
++#include <linux/version.h>
++#include <asm/uaccess.h>
++
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
++#define compat_verify_area(a,b,c)       ( ! access_ok(a,b,c) )
++#else
++#define compat_verify_area(a,b,c)       verify_area(a,b,c)
++#endif
++
++
++
+ extern int 	g_num_sessions;			/* number of active sessions */
+ 
+ struct kernel_vars;
+--- mol-0.9.70.orig/src/kmod/entry.S
++++ mol-0.9.70/src/kmod/entry.S
+@@ -55,7 +55,7 @@
+ 	mtcr	r3
+ 
+ 	// msr to be used in mac-mode
+-	LOADI	r3,MSR_ME | MSR_IR | MSR_DR | MSR_PR | MSR_EE 
++	LOADI	r3,(MSR_ME | MSR_IR | MSR_DR | MSR_PR | MSR_EE)
+ 	stw	r3,K_MSR(r1)
+ 
+ 	PERF_MONITOR_SETUP /**/ r4
+--- mol-0.9.70.orig/src/kmod/splitmode.S
++++ mol-0.9.70/src/kmod/splitmode.S
+@@ -331,7 +331,7 @@
+ 	sync					// 74xx needs this
+ 
+ 	mtsrr0	r2				// The simplest thing is to do an RFI
+-	LOADI	r3,MSR_EE | MSR_PR | MSR_IR | MSR_SE | MSR_BE
++	LOADI	r3,(MSR_EE | MSR_PR | MSR_IR | MSR_SE | MSR_BE)
+ 	andc	r4,r7,r3			// Clear msr bits (r7=srr1)
+ 	xGPR_LOAD	R6
+ 	xGPR_LOAD	R7	
+--- mol-0.9.70.orig/src/netdriver/sheep.c
++++ mol-0.9.70/src/netdriver/sheep.c
+@@ -25,12 +25,20 @@
+ #include <linux/in.h>
+ #include <linux/wait.h>
+ 
++MODULE_AUTHOR("Marc Hellwig and Christian Bauer");
++MODULE_DESCRIPTION("SheepShaver/Basilisk II networking");
+ MODULE_LICENSE("GPL");
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
+ #define LINUX_26
+ #endif
+ 
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,9)
++#define ETH_HDR(skb) eth_hdr((skb))
++#else
++#define ETH_HDR(skb) (skb)->mac.ethernet
++#endif
++
+ #define DEBUG 0
+ 
+ #define bug printk
+@@ -72,7 +80,13 @@
+  */
+ 
+ #ifdef LINUX_26
++
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12))
++#define compat_sk_alloc(a,b,c)  sk_alloc( (a), (b), &mol_proto, 1 )
++#else
+ #define compat_sk_alloc(a,b,c)	sk_alloc( (a), (b), (c), NULL )
++#endif
++
+ #define skt_set_dead(skt)	do {} while(0)
+ #define wmem_alloc		sk_wmem_alloc
+ #else
+@@ -148,10 +162,16 @@
+  * the IP address is wrong.)
+  */
+ 
++
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,14))
++static int
++sheep_net_receiver( struct sk_buff *skb, struct net_device *dev, struct packet_type *pt, struct net_device *orig_dev )
++#else
+ static int 
+ sheep_net_receiver( struct sk_buff *skb, struct net_device *dev, struct packet_type *pt )
++#endif
+ {
+-	int multicast = (skb->mac.ethernet->h_dest[0] & ETH_ADDR_MULTICAST);
++	int multicast = (ETH_HDR(skb)->h_dest[0] & ETH_ADDR_MULTICAST);
+ 	const char *laddr = dev->dev_addr;
+ 	struct sk_buff *skb2;
+ 	struct SheepVars *v = (struct SheepVars*)pt;
+@@ -165,7 +185,7 @@
+ 
+ 		if( !multicast ) {
+ 			// Drop, unless this is a localhost -> MOL transmission */
+-			if( addrcmp((char*)&skb->mac.ethernet->h_dest, v->fake_addr) )
++			if( addrcmp((char*)&ETH_HDR(skb)->h_dest, v->fake_addr) )
+ 				goto drop;
+ 
+ 			/* XXX: If it were possible, we would prevent the packet from beeing sent out
+@@ -176,16 +196,16 @@
+ 			 * the controller. This way, the packet ought to be discarded by
+ 			 * switches.
+ 			 */
+-			cpyaddr( &skb->mac.ethernet->h_dest[0], laddr );
++			cpyaddr( &ETH_HDR(skb)->h_dest[0], laddr );
+ 		}
+ 	} else {
+ 		// is this a packet to the local host from MOL?
+-		if( !addrcmp((char*)&skb->mac.ethernet->h_source, v->fake_addr) )
++		if( !addrcmp((char*)&ETH_HDR(skb)->h_source, v->fake_addr) )
+ 			goto drop;
+ 		
+ 		if( !multicast ) {
+ 			// if the packet is not meant for this host, discard it
+-			if( addrcmp((char*)&skb->mac.ethernet->h_dest, laddr) )
++			if( addrcmp((char*)&ETH_HDR(skb)->h_dest, laddr) )
+ 				goto drop;
+ 
+ 			// filter IP-traffic
+@@ -213,7 +233,7 @@
+ 	skb = skb2;
+ 
+ 	if( !multicast )
+-		cpyaddr( &skb->mac.ethernet->h_dest[0], v->fake_addr );
++		cpyaddr( &ETH_HDR(skb)->h_dest[0], v->fake_addr );
+ 
+ 	// We also want the Ethernet header
+ 	skb_push( skb, skb->data - skb->mac.raw );
+@@ -234,6 +254,15 @@
+ /************************************************************************/
+ /*	misc device ops							*/
+ /************************************************************************/
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12))
++static struct proto mol_proto =
++{
++	.name     = "MOL",
++	.owner     = THIS_MODULE,
++	.obj_size    = sizeof(struct sock)
++};
++#endif
++
+ 
+ static int 
+ sheep_net_open( struct inode *inode, struct file *f )
+@@ -242,13 +271,23 @@
+ 	struct SheepVars *v;
+ 	D(bug("sheep_net: open\n"));
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12))
++	if (proto_register(&mol_proto,0) < 0)
++	{
++		printk(KERN_INFO "Unable to register protocol type\n");
++		return -1;
++	}
++#endif
+ 	// Must be opened with read permissions
+ 	if( (f->f_flags & O_ACCMODE) == O_WRONLY )
+ 		return -EPERM;
+ 
+ 	// Allocate private variables
+-	if( !(v=(struct SheepVars *)f->private_data=kmalloc(sizeof(*v), GFP_USER)) )
++	f->private_data=kmalloc(sizeof(*v), GFP_USER);
++	v=(struct SheepVars *)f->private_data;
++	if( !v)
+ 		return -ENOMEM;
++
+ 	memset( v, 0, sizeof(*v) );
+ 	memcpy( v->fake_addr, fake_addr_, 6 );
+ 
+@@ -278,6 +317,10 @@
+ 	while( (skb=skb_dequeue(&v->queue)) )
+ 		kfree_skb(skb);
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12))
++	proto_unregister(&mol_proto);
++#endif
++
+ 	// Free private variables
+ 	kfree(v);
+ 	return 0;
+@@ -394,7 +437,7 @@
+ 	skb->mac.raw = skb->data;
+ 
+ 	// Base the IP-filter on the IP address of outgoing ARPs
+-	if( skb->mac.ethernet->h_proto == htons(ETH_P_ARP) ) {
++	if( ETH_HDR(skb)->h_proto == htons(ETH_P_ARP) ) {
+ 		char *s = &skb->data[14+14];	/* source IP-address */
+ 		int n[4];
+ 		if( *(long*)s != v->ipfilter ) {
+--- mol-0.9.70.orig/src/netdriver/tun.c
++++ mol-0.9.70/src/netdriver/tun.c
+@@ -240,7 +240,7 @@
+ 	DBG(KERN_INFO "%s: tun_chr_write %d\n", tun->name, count);
+ 
+ 	for (i = 0, len = 0; i < count; i++) {
+-		if (verify_area(VERIFY_READ, iv[i].iov_base, iv[i].iov_len))
++		if (compat_verify_area(VERIFY_READ, iv[i].iov_base, iv[i].iov_len))
+ 			return -EFAULT;
+ 		len += iv[i].iov_len;
+ 	}
+@@ -304,7 +304,7 @@
+ 	DBG(KERN_INFO "%s: tun_chr_read\n", tun->name);
+ 
+ 	for (i = 0, len = 0; i < count; i++) {
+-		if (verify_area(VERIFY_WRITE, iv[i].iov_base, iv[i].iov_len))
++		if (compat_verify_area(VERIFY_WRITE, iv[i].iov_base, iv[i].iov_len))
+ 			return -EFAULT;
+ 		len += iv[i].iov_len;
+ 	}
+--- mol-0.9.70.orig/src/netdriver/Makefile.24
++++ mol-0.9.70/src/netdriver/Makefile.24
+@@ -1,8 +1,6 @@
+ # -*- makefile -*-
+ 
+ obj-$(BUILD_SHEEP)	+= sheep.o
+-obj-$(BUILD_TAP)	+= ethertap.o
+-obj-$(BUILD_TUN)	+= tun.o
+ obj-m			+= kuname.o
+ 
+ sheep.o ethertap.o tun.o: .kuname
+--- mol-0.9.70.orig/src/netdriver/Makefile.26
++++ mol-0.9.70/src/netdriver/Makefile.26
+@@ -1,8 +1,6 @@
+ # -*- makefile -*-
+ 
+ obj-$(BUILD_SHEEP)	+= sheep.o
+-obj-$(BUILD_TAP)	+= ethertap.o
+-obj-$(BUILD_TUN)	+= tun.o
+ obj-m			+= kuname.o
+ 
+ 
+--- mol-0.9.70.orig/src/netdriver/Makefile
++++ mol-0.9.70/src/netdriver/Makefile
+@@ -16,26 +16,14 @@
+ 	@ln -sf ../Makefile.$(LV) build/Makefile
+ 
+ setup-tree-26: setup-tree-common
+-	@for x in tun.c ethertap.c ; do \
+-		ln -sf $(KERNEL_SOURCE)/drivers/net/$$x build/ || exit 1 ; \
+-	done
+ 
+ setup-tree-24: setup-tree-common
+-	@for x in tun.c ethertap.c if_tun.h ; do \
+-		ln -sf ../$$x build/ || exit 1 ; \
+-	done
+-
+-# The ethertap and tun driver is 2.4 only. Unfortunately, it is difficult to 
+-# do a conditional build based upon the kuname result since kuname
+-# is dynamically generated. We hack around this by building empty
+-# modules and by deleting them in the all-local target.
+ 
+ all-local: setup-tree-$(LV)
+ 	@$(MAKE) --no-print-directory -C $(KERNEL_SOURCE) "SUBDIRS=$$PWD/build" \
+-		BUILD_SHEEP=$(CONFIG_SHEEP:y=m) BUILD_TAP=$(CONFIG_TAP:y=m) \
+-		BUILD_TUN=$(CONFIG_TUN:y=m) \
++		BUILD_SHEEP=$(CONFIG_SHEEP:y=m) \
+ 		modules $(KILL_WARNING_$(LV))
+-	@for x in tun ethertap sheep ; do \
++	@for x in sheep ; do \
+ 		[ -f build/$$x.$(MP) ] || continue ; \
+ 		$(NM) build/$$x.$(MP) | grep -q init_module || continue ; \
+ 		ln -f build/$$x.$(MP) $(MOD_DEST)/ || exit 1 ; \
