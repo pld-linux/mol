@@ -13,12 +13,14 @@
 %bcond_with	minimal		# no X, no sound
 %bcond_without	debugger	# no debugger
 
+%define	_basever 0.9.71
+%define	_minor .1
 %define _rel	0.1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.71.1
+Version:	%{_basever}%{_minor}
 Release:	%{_rel}
 License:	GPL
 Group:		Applications/Emulators
@@ -42,8 +44,8 @@ Requires:	kernel(mol)
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define _mol_libdir 		%{_libdir}/mol/%{version}
-%define _mol_datadir 		%{_datadir}/mol/%{version}
+%define _mol_libdir 		%{_libdir}/mol/%{_basever}
+%define _mol_datadir 		%{_datadir}/mol/%{_basever}
 %define _mol_localstatedir	/var/lib/mol
 
 %description
@@ -225,7 +227,7 @@ rm -rf $RPM_BUILD_ROOT
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	prefix=%{_prefix}	\
-	docdir=moldoc
+	docdir=/moldoc
 %endif
 
 %if %{with kernel}
@@ -266,6 +268,7 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with userspace}
 %files
 %defattr(644,root,root,755)
+%doc $RPM_BUILD_ROOT/moldoc/*
 %dir %{_sysconfdir}/mol
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/mol/[!t]*
 %attr(755,root,root) %{_sysconfdir}/mol/tunconfig
