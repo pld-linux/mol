@@ -9,34 +9,24 @@
 %bcond_without	kernel		# don't build kernel modules
 %bcond_without	smp		# don't build SMP module
 %bcond_with	verbose		# verbose build (V=1)
-#%%bcond_without	userspace	# don't build userspace tools
+%bcond_without	userspace	# don't build userspace tools
 %bcond_with	minimal		# no X, no sound
 %bcond_without	debugger	# no debugger
 
-%define _rel	0.1
+%define _rel	0.6
+%define _pre	pre9
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc ¾å¤Î MacOS ¥Í¥¤¥Æ¥£¥Ö¼Â¹Ô´Ä¶­
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.70
-Release:	%{_rel}
+Version:	0.9.71
+Release:	0.%{_pre}.%{_rel}
 License:	GPL
 Group:		Applications/Emulators
-Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
-# Source0-md5:	bfdd0bd6ae01018b5c46f87d4ad879f1
+#Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
+Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}_%{_pre}.tar.bz2
+# Source0-md5:	d52087b3765a09b54e2b5e506b4fd477
 #Source1:	mol.init
-Patch0:		%{name}-modules-update.patch
-Patch1:		%{name}-modules26.patch
-#Patch0:	%{name}-curses.patch
-#Patch1:	%{name}-configure.patch
-#Patch2:	%{name}-kernel.patch
-#Patch3:	%{name}-sheepnet.patch
-#Patch4:	%{name}-netdriver.patch
-#Patch5:	%{name}-libimport.patch
-#Patch6:	%{name}-usbdev.patch
-#Patch7:	%{name}-gkh.patch
-#Patch8:	%{name}-gkh-compiler_h.patch
-#Patch9:	%{name}-gkh-includes.patch
 Patch10:	%{name}-warnings.patch
 URL:		http://www.maconlinux.org/
 #BuildRequires:	XFree86-devel
@@ -77,7 +67,6 @@ Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Applications/Emulators
 Requires(post,postun):	/sbin/depmod
 Provides:	kernel(mol)
-#Obsoletes:	kernel-mol
 
 %description -n kernel%{_alt_kernel}-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
@@ -94,7 +83,6 @@ Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Applications/Emulators
 Requires(post,postun):	/sbin/depmod
 Provides:	kernel(mol)
-#Obsoletes:	kernel-mol
 
 %description -n kernel%{_alt_kernel}-smp-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
@@ -106,70 +94,77 @@ Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 
 %prep
-%setup -q
-chmod +w -R .
-%patch0 -p1
-%patch1 -p1
-%patch10 -p1
-sed -i 's|@KERNEL_SRC@|%{_kernelsrcdir}|g' src/kmod/Linux/Makefile.26
-sed -i '/struct menu \*current_menu/s/static//' config/kconfig/mconf.c
-sed -i '/KERNEL_SOURCE=/s|=.*|="%{_kernelsrcdir}"|' scripts/kernelsrc
+%setup -q -n %{name}-%{version}_%{_pre}
+echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
+sed -i 's@ \./configure @ true @' config/Makefile.master
 
 cat << EOF | sed 's/^ *//' > config/defconfig-ppc
     CONFIG_PPC=y
-    CONFIG_FBDEV=y
-%if !%{with minimal}
     CONFIG_OLDWORLD=y
-    CONFIG_X11=y
-    CONFIG_VNC=y
-    CONFIG_XDGA=y
-    CONFIG_ALSA=y
-    CONFIG_OSS=y
-    CONFIG_USBDEV=y
-    CONFIG_TTYDRIVER=y
-%else
-    # CONFIG_OLDWORLD is not set
+    CONFIG_FBDEV=y
+%if %{with minimal}
     # CONFIG_X11 is not set
     # CONFIG_VNC is not set
-    # CONFIG_XDGA is not set
     # CONFIG_ALSA is not set
     # CONFIG_OSS is not set
-    # CONFIG_USBDEV is not set
-    # CONFIG_TTYDRIVER is not set
+%else
+    CONFIG_X11=y
+    CONFIG_VNC=y
+    CONFIG_ALSA=y
+    CONFIG_OSS=y
 %endif
+    # CONFIG_XDGA is not set
+    CONFIG_USBDEV=y
+    # CONFIG_PCIPROXY is not set
+
+    ### Debugging
+    CONFIG_TTYDRIVER=y
 %if %{with debugger}
     CONFIG_DEBUGGER=y
+    CONFIG_SCSIDEBUG=y
+    CONFIG_DUMP_PACKETS=y
+    CONFIG_DHCP_DEBUG=y
 %else
     # CONFIG_DEBUGGER is not set
+    # CONFIG_SCSIDEBUG is not set
+    # CONFIG_DUMP_PACKETS is not set
+    # CONFIG_DHCP_DEBUG is not set
 %endif
+    # CONFIG_HOSTED is not set
 
     ### Network drivers
-    CONFIG_TUN=y
-    CONFIG_TAP=y
+    # CONFIG_TUN is not set
+    # CONFIG_TAP is not set
     CONFIG_SHEEP=y
-
 EOF
 
 %build
-%{__autoheader}
-%{__autoconf}
-
-CFLAGS="%{rpmcflags} -I/usr/include/ncurses -DNETLINK_TAPBASE=16"; export CFLAGS
-
+%{__make} configure
+cd obj-ppc/config
+CPPFLAGS="-I/usr/include/ncurses"; export CPPFLAGS
 %configure \
-%if !%{with minimal}
-	--with-x	\
-	--enable-alsa	\
-	--enable-xdga	\
-	--enable-png
+%if %{with minimal}
+	--disable-alsa \
+	--disable-png \
+%endif
+	--disable-xdga
+cd ../..
+
+%{__make} defconfig
+
+%if %{with userspace}
+sed -i 's/<curses.h>/"curses.h"/' -i src/debugger/deb/{cmdline.c,monitor.c}
+%{__make} \
+	NCURSES_INCLUDES="-I/usr/include/ncurses" \
+	prefix=%{_prefix} \
+	BUILD_MODS=n
 %endif
 
-%{__make} clean
-%{__make} defconfig
-%{__make} \
-	prefix=%{_prefix}
+%if %{with kernel}
+%{__make} obj-ppc/include/molversion.h local-includes
 
-cd src/kmod/build
+%{__make} -C src/kmod/Linux setup-common
+cd obj-ppc/build/src/kmod
 for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
 	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
 		exit 1
@@ -190,12 +185,13 @@ for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
 	%{__make} -C %{_kernelsrcdir} modules \
 		CC="%{__cc}" CPP="%{__cpp}" \
 		M=$PWD O=$PWD/o \
-		%{?with_verbose:V=1}
+		%{?with_verbose:V=1} T=$TMPDIR
 	mv mol.ko mol-$cfg.ko
 done
+cd ../../../..
 
-cd ../../netdriver/build
-echo 'obj-m := sheep.o' > Makefile
+%{__make} -C src/netdriver setup-tree-26
+cd obj-ppc/build/src/netdriver
 for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
 	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
 		exit 1
@@ -220,30 +216,29 @@ for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
 	mv sheep.ko sheep-$cfg.ko
 done
 cd ../../..
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
-#install -d $RPM_BUILD_ROOT/etc/rc.d/init.d
-
+%if %{with userspace}
 %{__make} install \
 	DESTDIR=$RPM_BUILD_ROOT \
 	prefix=%{_prefix}	\
 	docdir=moldoc
-
-#install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
+%endif
 
 %if %{with kernel}
-cd src
+cd obj-ppc/build/src
 install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}{,smp}/misc
-install kmod/build/mol-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
+install kmod/mol-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
 	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/mol.ko
-install netdriver/build/sheep-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
+install netdriver/sheep-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
 	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/sheep.ko
 %if %{with smp} && %{with dist_kernel}
-install kmod/build/mol-smp.ko \
+install kmod/mol-smp.ko \
 	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/mol.ko
-install netdriver/build/sheep-smp.ko \
+install netdriver/sheep-smp.ko \
 	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/sheep.ko
 %endif
 cd ..
@@ -251,23 +246,6 @@ cd ..
 
 %clean
 rm -rf $RPM_BUILD_ROOT
-
-#%post
-#/sbin/chkconfig --add mol
-#if [ -f /var/lock/subsys/mol ]; then
-#	/etc/rc.d/init.d/mol stop 1>&2
-#	/etc/rc.d/init.d/mol start 1>&2
-#else
-#	echo "Run \"/etc/rc.d/init.d/mol start\" to load modules"
-#fi
-
-#%preun
-#if [ "$1" = "0" ]; then
-#	if [ -f /var/lock/subsys/mol ]; then
-#		/etc/rc.d/init.d/mol stop 1>&2
-#	fi
-#	/sbin/chkconfig --del mol
-#fi
 
 %if %{with kernel}
 %post	-n kernel%{_alt_kernel}-%{name}
@@ -287,7 +265,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc $RPM_BUILD_ROOT/moldoc/*
 %dir %{_sysconfdir}/mol
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/mol/[!t]*
 %attr(755,root,root) %{_sysconfdir}/mol/tunconfig
@@ -305,7 +282,6 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with debugger}
 %attr(755,root,root) %{_mol_libdir}/bin/moldeb
 %endif
-#%attr(754,root,root) /etc/rc.d/init.d/mol
 %attr(755,root,root) %{_mol_libdir}/mol.symbols
 %dir %{_mol_datadir}
 %{_mol_datadir}/images
@@ -319,17 +295,20 @@ rm -rf $RPM_BUILD_ROOT
 %{_mol_datadir}/startboing
 %dir %{_mol_localstatedir}
 %{_mol_localstatedir}/nvram.nw
+%{_mol_localstatedir}/nvram.x
 %{_mandir}/man1/*
 %{_mandir}/man5/*
 
 %if %{with kernel}
 %files -n kernel%{_alt_kernel}-%{name}
 %defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}/misc/*
+/lib/modules/%{_kernel_ver}/misc/mol.ko*
+/lib/modules/%{_kernel_ver}/misc/sheep.ko*
 
 %if %{with smp} && %{with dist_kernel}
 %files -n kernel%{_alt_kernel}-smp-%{name}
 %defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}smp/misc/*
+/lib/modules/%{_kernel_ver}smp/misc/mol.ko*
+/lib/modules/%{_kernel_ver}smp/misc/sheep.ko*
 %endif
 %endif
