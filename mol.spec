@@ -13,21 +13,20 @@
 %bcond_with	minimal		# no X, no sound
 %bcond_without	debugger	# no debugger
 
-%define _rel	0.6
-%define _pre	pre9
+%define _rel	0.1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc ¾å¤Î MacOS ¥Í¥¤¥Æ¥£¥Ö¼Â¹Ô´Ä¶­
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	0.9.71
-Release:	0.%{_pre}.%{_rel}
+Version:	0.9.71.1
+Release:	%{_rel}
 License:	GPL
 Group:		Applications/Emulators
 #Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
-Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}_%{_pre}.tar.bz2
-# Source0-md5:	d52087b3765a09b54e2b5e506b4fd477
+Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
+# Source0-md5:	3eaa51927191b03b06828609a1122307
 #Source1:	mol.init
-Patch10:	%{name}-warnings.patch
+#Patch10:	%{name}-warnings.patch
 URL:		http://www.maconlinux.org/
 #BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -94,7 +93,7 @@ Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 
 %prep
-%setup -q -n %{name}-%{version}_%{_pre}
+%setup -q
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
@@ -184,6 +183,7 @@ for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}
 
 	%{__make} -C %{_kernelsrcdir} modules \
 		CC="%{__cc}" CPP="%{__cpp}" \
+		HOSTCC="%{__cc}" \
 		M=$PWD O=$PWD/o \
 		%{?with_verbose:V=1} T=$TMPDIR
 	mv mol.ko mol-$cfg.ko
@@ -263,6 +263,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %endif
 
+%if %{with userspace}
 %files
 %defattr(644,root,root,755)
 %dir %{_sysconfdir}/mol
@@ -298,6 +299,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mol_localstatedir}/nvram.x
 %{_mandir}/man1/*
 %{_mandir}/man5/*
+%endif
 
 %if %{with kernel}
 %files -n kernel%{_alt_kernel}-%{name}
