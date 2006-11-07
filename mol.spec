@@ -26,6 +26,7 @@ Group:		Applications/Emulators
 Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
 # Source0-md5:	3eaa51927191b03b06828609a1122307
 #Source1:	mol.init
+Patch0:		%{name}-iquote.patch
 URL:		http://www.maconlinux.org/
 #BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -93,6 +94,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 
 %prep
 %setup -q
+%patch0 -p1
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
@@ -137,10 +139,12 @@ cat << EOF | sed 's/^ *//' > config/defconfig-ppc
 EOF
 
 %build
+rm config/configure/configure
 %{__make} configure
 cd obj-ppc/config
 CPPFLAGS="-I/usr/include/ncurses"; export CPPFLAGS
 %configure \
+	AS="%{__cc} -c" \
 %if %{with minimal}
 	--disable-alsa \
 	--disable-png \
@@ -152,7 +156,6 @@ export TERM=dumb
 %{__make} defconfig
 
 %if %{with userspace}
-sed -i 's/<curses.h>/"curses.h"/' -i src/debugger/deb/{cmdline.c,monitor.c}
 %{__make} \
 	NCURSES_INCLUDES="-I/usr/include/ncurses" \
 	prefix=%{_prefix} \
