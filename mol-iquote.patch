@@ -1,0 +1,230 @@
+diff -Nur mol-0.9.71.1.orig/config/configure/configure mol-0.9.71.1.iquote/config/configure/configure
+--- mol-0.9.71.1.orig/config/configure/configure	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/config/configure/configure	2006-11-07 16:01:28.000000000 +0200
+@@ -7088,7 +7088,7 @@
+    CFLAGS_BAK="$CFLAGS"
+    { echo "$as_me:$LINENO: checking for working XDGA headers" >&5
+ echo $ECHO_N "checking for working XDGA headers... $ECHO_C" >&6; }
+-   CFLAGS="$CFLAGS -I. -I- $X_CFLAGS"
++   CFLAGS="$CFLAGS -iquote. $X_CFLAGS"
+    cat >conftest.$ac_ext <<_ACEOF
+ /* confdefs.h.  */
+ _ACEOF
+@@ -7154,7 +7154,7 @@
+ echo "${ECHO_T}$XDGA" >&6; }
+    if test "$XDGA" = no ; then
+       XDGA_CFLAGS=`echo $X_CFLAGS | sed 's/.*-I/-I/ ; s/include.*/include\/X11\/extensions/'`
+-      CFLAGS="$CFLAGS -I. -I- $XDGA_CFLAGS"
++      CFLAGS="$CFLAGS -iquote. $XDGA_CFLAGS"
+       { echo "$as_me:$LINENO: checking whether XDGA workaround works" >&5
+ echo $ECHO_N "checking whether XDGA workaround works... $ECHO_C" >&6; }
+       cat >conftest.$ac_ext <<_ACEOF
+diff -Nur mol-0.9.71.1.orig/config/configure.in mol-0.9.71.1.iquote/config/configure.in
+--- mol-0.9.71.1.orig/config/configure.in	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/config/configure.in	2006-11-07 16:01:28.000000000 +0200
+@@ -153,7 +153,7 @@
+    ########### XDGA #############
+    CFLAGS_BAK="$CFLAGS"
+    AC_MSG_CHECKING([for working XDGA headers])
+-   CFLAGS="$CFLAGS -I. -I- $X_CFLAGS"
++   CFLAGS="$CFLAGS -iquote. $X_CFLAGS"
+    AC_TRY_COMPILE([
+ 	#include <X11/Xlib.h>
+ 	#include <X11/extensions/xf86dga.h>],[], XDGA=yes, XDGA=no)
+@@ -161,7 +161,7 @@
+    AC_MSG_RESULT($XDGA)
+    if test "$XDGA" = no ; then
+       XDGA_CFLAGS=`echo $X_CFLAGS | sed 's/.*-I/-I/ ; s/include.*/include\/X11\/extensions/'`
+-      CFLAGS="$CFLAGS -I. -I- $XDGA_CFLAGS"
++      CFLAGS="$CFLAGS -iquote. $XDGA_CFLAGS"
+       AC_MSG_CHECKING([whether XDGA workaround works])   
+       AC_TRY_COMPILE([
+ 	#include <X11/Xlib.h>
+diff -Nur mol-0.9.71.1.orig/config/Makefile.top mol-0.9.71.1.iquote/config/Makefile.top
+--- mol-0.9.71.1.orig/config/Makefile.top	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/config/Makefile.top	2006-11-07 16:01:28.000000000 +0200
+@@ -71,8 +71,8 @@
+ mollib		:= $(top_odir)/lib
+ molbin		:= $(top_odir)/lib/bin
+ 
+-IDIRS		= -I. -I$(ARCHINCLUDES) -I./include -I$(srcdir)/shared \
+-		  -I$(srcdir)/include $(INCLUDES) -I-
++IDIRS		= -iquote. -iquote$(ARCHINCLUDES) -iquote./include -iquote$(srcdir)/shared \
++		  -iquote$(srcdir)/include $(INCLUDES)
+ all:
+ 
+ RELNAME		:= $(shell $(scriptdir)/reldir)
+diff -Nur mol-0.9.71.1.orig/src/cpu/mpc107/Makefile.am mol-0.9.71.1.iquote/src/cpu/mpc107/Makefile.am
+--- mol-0.9.71.1.orig/src/cpu/mpc107/Makefile.am	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/cpu/mpc107/Makefile.am	2006-11-07 16:01:28.000000000 +0200
+@@ -10,7 +10,7 @@
+ 
+ noinst_LIBRARIES	= libmain.a
+ 
+-INCLUDES		= -I./ -I../../include -I../../shared -I-
++INCLUDES		= -iquote./ -iquote../../include -iquote../../shared
+ libmain_a_SOURCES	= init.c
+ CLEANFILES		= asm_offsets.h asm_offsets.s asm_offsets.c
+ 
+diff -Nur mol-0.9.71.1.orig/src/debugger/deb/Makefile mol-0.9.71.1.iquote/src/debugger/deb/Makefile
+--- mol-0.9.71.1.orig/src/debugger/deb/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/debugger/deb/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -3,6 +3,6 @@
+ 
+ XTARGETS		= deb
+ deb-OBJS		= cmdline.o deb.o monitor.o symbols.o
+-INCLUDES		= $(NCURSES_INCLUDES) -I../include
++INCLUDES		= $(NCURSES_INCLUDES) -iquote../include
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/src/debugger/mon/Makefile mol-0.9.71.1.iquote/src/debugger/mon/Makefile
+--- mol-0.9.71.1.orig/src/debugger/mon/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/debugger/mon/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -5,6 +5,6 @@
+ mon-OBJS		= ppc-opc.o ppc-dis.o m68k-opc.o m68k-dis.o \
+ 			  floatformat.o glue.o
+ 
+-INCLUDES		= -I../include
++INCLUDES		= -iquote../include
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/src/drivers/disk/Makefile mol-0.9.71.1.iquote/src/drivers/disk/Makefile
+--- mol-0.9.71.1.orig/src/drivers/disk/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/drivers/disk/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -8,6 +8,6 @@
+ obj-scsi-$(LINUX)	= sg-scsi.o cd-scsi.o ablk-cd.o
+ dbg-$(CONFIG_SCSIDEBUG)	= scsidbg.o
+ 
+-INCLUDES		= -I../include
++INCLUDES		= -iquote../include
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/src/drivers/net/Makefile mol-0.9.71.1.iquote/src/drivers/net/Makefile
+--- mol-0.9.71.1.orig/src/drivers/net/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/drivers/net/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -10,6 +10,6 @@
+ obj-$(PPC)		+= ipchksum-ppc.o
+ obj-$(X86)		+= ipchksum-x86.o
+ 
+-INCLUDES		= -I../include
++INCLUDES		= -iquote../include
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/src/drivers/oldworld/Makefile mol-0.9.71.1.iquote/src/drivers/oldworld/Makefile
+--- mol-0.9.71.1.orig/src/drivers/oldworld/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/drivers/oldworld/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -5,6 +5,6 @@
+ oldworld-OBJS		= hammerhead.o awacs.o swim3.o hacks.o scsi_main.o 53c94.o mesh.o \
+ 			  scsi-bus.o scsi-unit.o
+ 
+-INCLUDES		= -I../include
++INCLUDES		= -iquote../include
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/src/drivers/sound/Makefile mol-0.9.71.1.iquote/src/drivers/sound/Makefile
+--- mol-0.9.71.1.orig/src/drivers/sound/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/drivers/sound/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -4,7 +4,7 @@
+ XTARGETS		= sound
+ sound-OBJS		= $(obj-y)
+ 
+-INCLUDES		= -I../include
++INCLUDES		= -iquote../include
+ 
+ obj-$(CONFIG_ALSA)	+= alsa.o
+ obj-$(CONFIG_OSS)	+= oss.o
+diff -Nur mol-0.9.71.1.orig/src/drivers/video/Makefile mol-0.9.71.1.iquote/src/drivers/video/Makefile
+--- mol-0.9.71.1.orig/src/drivers/video/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/drivers/video/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -4,7 +4,7 @@
+ XTARGETS		= video
+ video-OBJS		= $(obj-y) $(obj-y-y)
+ 
+-INCLUDES		= -I../include
++INCLUDES		= -iquote../include
+ 
+ X11			= $(if $(CONFIG_X11),$(HAVE_X11))
+ 
+diff -Nur mol-0.9.71.1.orig/src/kmod/Darwin/Makefile mol-0.9.71.1.iquote/src/kmod/Darwin/Makefile
+--- mol-0.9.71.1.orig/src/kmod/Darwin/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/kmod/Darwin/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -5,7 +5,7 @@
+ BINNAME			= MolExt
+ BUNDLE-LIB		= libmolkern.a
+ 
+-INCLUDES		= -I../include -I$(OINC)/kern
++INCLUDES		= -iquote../include -iquote$(OINC)/kern
+ CFLAGS			+= $(KERN_CFLAGS)
+ CXXFLAGS		+= -Os $(KERN_CXXFLAGS)
+ 
+diff -Nur mol-0.9.71.1.orig/src/kmod/Darwin/Rules.osx mol-0.9.71.1.iquote/src/kmod/Darwin/Rules.osx
+--- mol-0.9.71.1.orig/src/kmod/Darwin/Rules.osx	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/kmod/Darwin/Rules.osx	2006-11-07 15:55:33.000000000 +0200
+@@ -1,6 +1,6 @@
+ # -*- makefile -*-
+ 
+-IDIRS		= -I. -I$(ARCHINCLUDES) -I./include -I$(srcdir)/shared $(INCLUDES) -I-
++IDIRS		= -iquote. -iquote$(ARCHINCLUDES) -iquote./include -iquote$(srcdir)/shared $(INCLUDES)
+ 
+ OBUNDLE		:= $(ODIR)/$(BUNDLE)
+ KMOD		:= $(if $(BINNAME),$(OBUNDLE)/Contents/MacOS/$(BINNAME))
+diff -Nur mol-0.9.71.1.orig/src/kmod/Makefile.osx mol-0.9.71.1.iquote/src/kmod/Makefile.osx
+--- mol-0.9.71.1.orig/src/kmod/Makefile.osx	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/kmod/Makefile.osx	2006-11-07 16:01:28.000000000 +0200
+@@ -7,7 +7,7 @@
+ 			  traps.o hash.o moldbg.o
+ 
+ CFLAGS			+= $(KERN_CFLAGS)
+-INCLUDES		= -IDarwin -I$(SDIR) -I$(OINC)/kern
++INCLUDES		= -iquoteDarwin -iquote$(SDIR) -iquote$(OINC)/kern
+ 
+ ############################################################################
+ 
+diff -Nur mol-0.9.71.1.orig/src/kmod/mpc107/Makefile.mod mol-0.9.71.1.iquote/src/kmod/mpc107/Makefile.mod
+--- mol-0.9.71.1.orig/src/kmod/mpc107/Makefile.mod	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/kmod/mpc107/Makefile.mod	2006-11-07 16:01:28.000000000 +0200
+@@ -3,8 +3,8 @@
+ if MPC107
+ 
+ A_CFLAGS		= @CFLAGS@ -Wall -msoft-float -fno-builtin
+-A_INCLUDES		= -D__KERNEL__ -DKERNEL -I$(top_srcdir)/src/kmod/include \
+-			  -I$(top_srcdir)/src/shared -I$(top_srcdir)/src/kmod/mpc107 -I- 
++A_INCLUDES		= -D__KERNEL__ -DKERNEL -iquote$(top_srcdir)/src/kmod/include \
++			  -iquote$(top_srcdir)/src/shared -iquote$(top_srcdir)/src/kmod/mpc107
+ 
+ ###########################################################################
+ # Kernel module generation
+diff -Nur mol-0.9.71.1.orig/src/main/Darwin/Makefile mol-0.9.71.1.iquote/src/main/Darwin/Makefile
+--- mol-0.9.71.1.orig/src/main/Darwin/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/main/Darwin/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -6,6 +6,6 @@
+ 
+ obj-y			+= misc.o
+ 
+-INCLUDES		= -I../
++INCLUDES		= -iquote../
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/src/main/linux/Makefile mol-0.9.71.1.iquote/src/main/linux/Makefile
+--- mol-0.9.71.1.orig/src/main/linux/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/src/main/linux/Makefile	2006-11-07 16:01:28.000000000 +0200
+@@ -6,6 +6,6 @@
+ 
+ obj-y			+= misc.o
+ 
+-INCLUDES		= -I../
++INCLUDES		= -iquote../
+ 
+ include			$(rules)/Rules.make
+diff -Nur mol-0.9.71.1.orig/util/nvs/Makefile mol-0.9.71.1.iquote/util/nvs/Makefile
+--- mol-0.9.71.1.orig/util/nvs/Makefile	2006-10-28 21:59:02.000000000 +0300
++++ mol-0.9.71.1.iquote/util/nvs/Makefile	2006-11-07 15:56:09.000000000 +0200
+@@ -15,7 +15,7 @@
+ 
+ include		../../Makefile.top
+ 
+-#CFLAGS 	= -I../../src/shared -I../../src/include -I-
++#CFLAGS 	= -iquote../../src/shared -iquote../../src/include
+ PROGRAMS	= nvs
+ nvs-OBJS	= nvs.o
+ 
