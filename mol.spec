@@ -1,7 +1,5 @@
 #
 # TODO:
-#  - building without userspace (make in userspace is preparing files
-#    for module building)
 #  - scripts should search for modules in /lib/moduiles
 #
 # Conditional build:
@@ -14,7 +12,7 @@
 %bcond_without	debugger	# no debugger
 
 %define	_basever 0.9.71
-%define	_minor .1
+%define	_minor	.1
 %define _rel	0.1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
@@ -28,7 +26,6 @@ Group:		Applications/Emulators
 Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
 # Source0-md5:	3eaa51927191b03b06828609a1122307
 #Source1:	mol.init
-#Patch10:	%{name}-warnings.patch
 URL:		http://www.maconlinux.org/
 #BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
@@ -151,6 +148,7 @@ CPPFLAGS="-I/usr/include/ncurses"; export CPPFLAGS
 	--disable-xdga
 cd ../..
 
+export TERM=dumb
 %{__make} defconfig
 
 %if %{with userspace}
