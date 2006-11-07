@@ -11,6 +11,8 @@
 %bcond_with	minimal		# no X, no sound
 %bcond_without	debugger	# no debugger
 
+%{?debug:%define with_debugger 1}
+
 %define	_basever 0.9.71
 %define	_minor	.1
 %define _rel	0.1
@@ -121,14 +123,18 @@ cat << EOF | sed 's/^ *//' > config/defconfig-ppc
     CONFIG_TTYDRIVER=y
 %if %{with debugger}
     CONFIG_DEBUGGER=y
-    CONFIG_SCSIDEBUG=y
-    CONFIG_DUMP_PACKETS=y
     CONFIG_DHCP_DEBUG=y
 %else
     # CONFIG_DEBUGGER is not set
+    # CONFIG_DHCP_DEBUG is not set
+%endif
+
+%if 0%{?debug:1}
+    CONFIG_SCSIDEBUG=y
+    CONFIG_DUMP_PACKETS=y
+%else
     # CONFIG_SCSIDEBUG is not set
     # CONFIG_DUMP_PACKETS is not set
-    # CONFIG_DHCP_DEBUG is not set
 %endif
     # CONFIG_HOSTED is not set
 
