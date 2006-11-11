@@ -35,9 +35,9 @@ BuildRequires:	autoconf
 BuildRequires:	automake
 #BuildRequires:	bison
 #BuildRequires:	flex
-#%{?with_dist_kernel:BuildRequires:	kernel-module-build >= 3:2.6.7}
+%{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.7}
 BuildRequires:	ncurses-devel
-BuildRequires:	rpmbuild(macros) >= 1.118
+BuildRequires:	rpmbuild(macros) >= 1.326
 Requires(post,preun):	/sbin/chkconfig
 Requires:	dev >= 2.8.0-24
 Requires:	kernel(mol)
@@ -173,58 +173,13 @@ export TERM=dumb
 
 %{__make} -C src/kmod/Linux setup-common
 cd obj-ppc/build/src/kmod
-for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
-	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
-		exit 1
-	fi
-	install -d o/include/linux
-	ln -sf %{_kernelsrcdir}/config-$cfg o/.config
-	ln -sf %{_kernelsrcdir}/Module.symvers-$cfg o/Module.symvers
-	ln -sf %{_kernelsrcdir}/include/linux/autoconf-$cfg.h o/include/linux/autoconf.h
-
-	%if %{with dist_kernel}
-		%{__make} -j1 -C %{_kernelsrcdir} O=$PWD/o prepare scripts
-	%else
-		install -d o/include/config
-		touch o/include/config/MARKER
-		ln -sf %{_kernelsrcdir}/scripts o/scripts
-	%endif
-
-	%{__make} -C %{_kernelsrcdir} modules \
-		CC="%{__cc}" CPP="%{__cpp}" \
-		HOSTCC="%{__cc}" \
-		M=$PWD O=$PWD/o \
-		%{?with_verbose:V=1} T=$TMPDIR
-	mv mol.ko mol-$cfg.ko
-done
+%build_kernel_modules T=$TMPDIR -m mol
 cd ../../../..
 
 %{__make} -C src/netdriver setup-tree-26
 cd obj-ppc/build/src/netdriver
-for cfg in %{?with_dist_kernel:%{?with_smp:smp} up}%{!?with_dist_kernel:nondist}; do
-	if [ ! -r "%{_kernelsrcdir}/config-$cfg" ]; then
-		exit 1
-	fi
-	install -d o/include/linux
-	ln -sf %{_kernelsrcdir}/config-$cfg o/.config
-	ln -sf %{_kernelsrcdir}/Module.symvers-$cfg o/Module.symvers
-	ln -sf %{_kernelsrcdir}/include/linux/autoconf-$cfg.h o/include/linux/autoconf.h
-
-	%if %{with dist_kernel}
-		%{__make} -j1 -C %{_kernelsrcdir} O=$PWD/o prepare scripts
-	%else
-		install -d o/include/config
-		touch o/include/config/MARKER
-		ln -sf %{_kernelsrcdir}/scripts o/scripts
-	%endif
-
-	%{__make} -C %{_kernelsrcdir} modules \
-		CC="%{__cc}" CPP="%{__cpp}" \
-		M=$PWD O=$PWD/o \
-		%{?with_verbose:V=1}
-	mv sheep.ko sheep-$cfg.ko
-done
-cd ../../..
+%build_kernel_modules -m sheep
+cd ../../../..
 %endif
 
 %install
@@ -239,18 +194,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %if %{with kernel}
 cd obj-ppc/build/src
-install -d $RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}{,smp}/misc
-install kmod/mol-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
-	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/mol.ko
-install netdriver/sheep-%{?with_dist_kernel:up}%{!?with_dist_kernel:nondist}.ko \
-	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}/misc/sheep.ko
-%if %{with smp} && %{with dist_kernel}
-install kmod/mol-smp.ko \
-	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/mol.ko
-install netdriver/sheep-smp.ko \
-	$RPM_BUILD_ROOT/lib/modules/%{_kernel_ver}smp/misc/sheep.ko
-%endif
-cd ..
+%install_kernel_modules -m kmod/mol,netdriver/sheep -d misc
+cd -
 %endif
 
 %clean
