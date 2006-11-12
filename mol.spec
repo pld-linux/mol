@@ -37,7 +37,7 @@ BuildRequires:	automake
 #BuildRequires:	flex
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.7}
 BuildRequires:	ncurses-devel
-BuildRequires:	rpmbuild(macros) >= 1.326
+BuildRequires:	rpmbuild(macros) >= 1.329
 Requires(post,preun):	/sbin/chkconfig
 Requires:	dev >= 2.8.0-24
 Requires:	kernel(mol)
@@ -172,14 +172,10 @@ export TERM=dumb
 %{__make} obj-ppc/include/molversion.h local-includes
 
 %{__make} -C src/kmod/Linux setup-common
-cd obj-ppc/build/src/kmod
-%build_kernel_modules T=$TMPDIR -m mol
-cd ../../../..
+%build_kernel_modules T=$TMPDIR -m mol -C obj-ppc/build/src/kmod
 
 %{__make} -C src/netdriver setup-tree-26
-cd obj-ppc/build/src/netdriver
-%build_kernel_modules -m sheep
-cd ../../../..
+%build_kernel_modules -m sheep -C obj-ppc/build/src/netdriver
 %endif
 
 %install
