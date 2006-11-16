@@ -15,7 +15,7 @@
 
 %define	_basever 0.9.71
 %define	_minor	.1
-%define _rel	0.1
+%define _rel	0.9
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc ¾å¤Î MacOS ¥Í¥¤¥Æ¥£¥Ö¼Â¹Ô´Ä¶­
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
@@ -28,6 +28,7 @@ Group:		Applications/Emulators
 Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
 # Source0-md5:	3eaa51927191b03b06828609a1122307
 Patch0:		%{name}-iquote.patch
+Patch1:		%{name}-scripts.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -66,7 +67,7 @@ Przy u¿yciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
 szybko¶ci±! Obs³ugiwane s± wszystkie wersje PowerPC MacOS-a (w³±cznie
 z MacOSX 10.2).
 
-%package -n kernel%{_alt_kernel}-%{name}
+%package -n kernel%{_alt_kernel}-misc-mol
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Release:	%{_rel}@%{_kernel_ver_str}
@@ -77,15 +78,15 @@ Requires(post,postun):	/sbin/depmod
 Requires(postun):	%releq_kernel_up
 %endif
 
-%description -n kernel%{_alt_kernel}-%{name}
+%description -n kernel%{_alt_kernel}-misc-mol
 This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking).
 
-%description -n kernel%{_alt_kernel}-%{name} -l pl
+%description -n kernel%{_alt_kernel}-misc-mol -l pl
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci).
 
-%package -n kernel%{_alt_kernel}-smp-%{name}
+%package -n kernel%{_alt_kernel}-smp-misc-mol
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Release:	%{_rel}@%{_kernel_ver_str}
@@ -96,18 +97,19 @@ Requires(post,postun):	/sbin/depmod
 Requires(postun):	%releq_kernel_smp
 %endif
 
-%description -n kernel%{_alt_kernel}-smp-%{name}
+%description -n kernel%{_alt_kernel}-smp-misc-mol
 This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking). SMP
 version.
 
-%description -n kernel%{_alt_kernel}-smp-%{name} -l pl
+%description -n kernel%{_alt_kernel}-smp-misc-mol -l pl
 Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
 tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
@@ -150,8 +152,8 @@ cat << EOF | sed 's/^ *//' > config/defconfig-ppc
     # CONFIG_HOSTED is not set
 
     ### Network drivers
-    # CONFIG_TUN is not set
-    # CONFIG_TAP is not set
+    CONFIG_TUN=y
+    CONFIG_TAP=y
     CONFIG_SHEEP=y
 EOF
 
@@ -207,17 +209,17 @@ rm -rf $RPM_BUILD_ROOT
 rm -rf $RPM_BUILD_ROOT
 
 %if %{with kernel}
-%post	-n kernel%{_alt_kernel}-%{name}
+%post	-n kernel%{_alt_kernel}-misc-mol
 %depmod %{_kernel_ver}
 
-%postun -n kernel%{_alt_kernel}-%{name}
+%postun -n kernel%{_alt_kernel}-misc-mol
 %depmod %{_kernel_ver}
 
 %if %{with smp} && %{with dist_kernel}
-%post	-n kernel%{_alt_kernel}-smp-%{name}
+%post	-n kernel%{_alt_kernel}-smp-misc-mol
 %depmod %{_kernel_ver}smp
 
-%postun -n kernel%{_alt_kernel}-smp-%{name}
+%postun -n kernel%{_alt_kernel}-smp-misc-mol
 %depmod %{_kernel_ver}smp
 %endif
 %endif
@@ -262,13 +264,13 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %if %{with kernel}
-%files -n kernel%{_alt_kernel}-%{name}
+%files -n kernel%{_alt_kernel}-misc-mol
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/misc/mol.ko*
 /lib/modules/%{_kernel_ver}/misc/sheep.ko*
 
 %if %{with smp} && %{with dist_kernel}
-%files -n kernel%{_alt_kernel}-smp-%{name}
+%files -n kernel%{_alt_kernel}-smp-misc-mol
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}smp/misc/mol.ko*
 /lib/modules/%{_kernel_ver}smp/misc/sheep.ko*
