@@ -27,20 +27,15 @@ Group:		Applications/Emulators
 #Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
 Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
 # Source0-md5:	3eaa51927191b03b06828609a1122307
-#Source1:	mol.init
 Patch0:		%{name}-iquote.patch
 URL:		http://www.maconlinux.org/
 #BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
-#BuildRequires:	bison
-#BuildRequires:	flex
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.7}
 BuildRequires:	ncurses-devel
-BuildRequires:	rpmbuild(macros) >= 1.329
-Requires(post,preun):	/sbin/chkconfig
+BuildRequires:	rpmbuild(macros) >= 1.330
 Requires:	dev >= 2.8.0-24
-Requires:	kernel(mol)
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -67,7 +62,10 @@ Summary(pl):	Modu³y j±dra Mac-on-Linux
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Applications/Emulators
 Requires(post,postun):	/sbin/depmod
-Provides:	kernel(mol)
+%if %{with dist_kernel}
+%requires_releq_kernel_up
+Requires(postun):	%releq_kernel_up
+%endif
 
 %description -n kernel%{_alt_kernel}-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
@@ -83,7 +81,10 @@ Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Applications/Emulators
 Requires(post,postun):	/sbin/depmod
-Provides:	kernel(mol)
+%if %{with dist_kernel}
+%requires_releq_kernel_smp
+Requires(postun):	%releq_kernel_smp
+%endif
 
 %description -n kernel%{_alt_kernel}-smp-%{name}
 This package contains the Mac-on-Linux kernel module needed by MOL. It
@@ -189,9 +190,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %if %{with kernel}
-cd obj-ppc/build/src
-%install_kernel_modules -m kmod/mol,netdriver/sheep -d misc
-cd -
+%install_kernel_modules -m obj-ppc/build/src/{kmod/mol,netdriver/sheep} -d misc
 %endif
 
 %clean
@@ -234,7 +233,7 @@ rm -rf $RPM_BUILD_ROOT
 %if %{with debugger}
 %attr(755,root,root) %{_mol_libdir}/bin/moldeb
 %endif
-%attr(755,root,root) %{_mol_libdir}/mol.symbols
+%{_mol_libdir}/mol.symbols
 %dir %{_mol_datadir}
 %{_mol_datadir}/images
 %{_mol_datadir}/oftrees
