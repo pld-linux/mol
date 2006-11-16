@@ -27,19 +27,17 @@ Group:		Applications/Emulators
 #Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
 Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
 # Source0-md5:	3eaa51927191b03b06828609a1122307
-Patch0:		%{name}-iquote.patch
-Patch1:		%{name}-scripts.patch
+Patch0:		%{name}-scripts.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
 %if %{with userspace}
-BuildRequires:	gcc >= 4.0
 %if !%{with minimal}
+BuildRequires:	XFree86-devel
 BuildRequires:	alsa-lib-devel
 BuildRequires:	libpng-devel
-BuildRequires:	xorg-lib-libX11-devel
-BuildRequires:	xorg-lib-libXext-devel
 %endif
+BuildRequires:	sed >= 4.0
 %{?with_debugger:BuildRequires:	ncurses-devel}
 %endif
 %if %{with kernel}
@@ -109,7 +107,6 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 %prep
 %setup -q
 %patch0 -p1
-%patch1 -p1
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
@@ -175,6 +172,7 @@ export TERM=dumb
 %{__make} defconfig
 
 %if %{with userspace}
+sed 's/<curses.h>/"curses.h"/' -i src/debugger/deb/{cmdline.c,monitor.c}
 %{__make} \
 	NCURSES_INCLUDES="-I/usr/include/ncurses" \
 	prefix=%{_prefix} \
