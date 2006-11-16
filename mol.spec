@@ -15,7 +15,7 @@
 
 %define	_basever 0.9.71
 %define	_minor	.1
-%define _rel	0.9
+%define _rel	1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja):	Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
 Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
