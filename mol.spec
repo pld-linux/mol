@@ -29,12 +29,22 @@ Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{n
 # Source0-md5:	3eaa51927191b03b06828609a1122307
 Patch0:		%{name}-iquote.patch
 URL:		http://www.maconlinux.org/
-#BuildRequires:	XFree86-devel
 BuildRequires:	autoconf
 BuildRequires:	automake
+%if %{with userspace}
+BuildRequires:	gcc >= 4.0
+%if !%{with minimal}
+BuildRequires:	alsa-lib-devel
+BuildRequires:	libpng-devel
+BuildRequires:	xorg-lib-libX11-devel
+BuildRequires:	xorg-lib-libXext-devel
+%endif
+%{?with_debugger:BuildRequires:	ncurses-devel}
+%endif
+%if %{with kernel}
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.7}
-BuildRequires:	ncurses-devel
 BuildRequires:	rpmbuild(macros) >= 1.330
+%endif
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -60,7 +70,7 @@ z MacOSX 10.2).
 Summary:	Mac-on-Linux kernel modules
 Summary(pl):	Modu³y j±dra Mac-on-Linux
 Release:	%{_rel}@%{_kernel_ver_str}
-Group:		Applications/Emulators
+Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
 %if %{with dist_kernel}
 %requires_releq_kernel_up
@@ -79,7 +89,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci).
 Summary:	Mac-on-Linux kernel modules SMP
 Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
 Release:	%{_rel}@%{_kernel_ver_str}
-Group:		Applications/Emulators
+Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
 %if %{with dist_kernel}
 %requires_releq_kernel_smp
