@@ -27,8 +27,12 @@ Group:		Applications/Emulators
 #Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
 Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
 # Source0-md5:	3eaa51927191b03b06828609a1122307
+Source1:	%{name}.desktop
+Source2:	%{name}-terminal.desktop
+Source3:	%{name}.png
 Patch0:		%{name}-iquote.patch
 Patch1:		%{name}-scripts.patch
+Patch2:		%{name}-molrc.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -110,6 +114,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
@@ -199,6 +204,11 @@ rm -rf $RPM_BUILD_ROOT
 	DESTDIR=$RPM_BUILD_ROOT \
 	prefix=%{_prefix}	\
 	docdir=/moldoc
+
+install -d $RPM_BUILD_ROOT{%{_pixmapsdir},%{_desktopdir}}
+install %{SOURCE1} $RPM_BUILD_ROOT%{_desktopdir}
+install %{SOURCE2} $RPM_BUILD_ROOT%{_desktopdir}
+install %{SOURCE3} $RPM_BUILD_ROOT%{_pixmapsdir}/mol.png
 %endif
 
 %if %{with kernel}
@@ -256,6 +266,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_mol_datadir}/config
 %{_mol_datadir}/drivers
 %{_mol_datadir}/startboing
+%{_desktopdir}/mol*.desktop
+%{_pixmapsdir}/mol.png
 %dir %{_mol_localstatedir}
 %{_mol_localstatedir}/nvram.nw
 %{_mol_localstatedir}/nvram.x
