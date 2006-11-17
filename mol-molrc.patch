@@ -1,0 +1,82 @@
+diff -Nur mol-0.9.71.1.orig/scripts/startmol mol-0.9.71.1.molrc/scripts/startmol
+--- mol-0.9.71.1.orig/scripts/startmol	2006-10-28 18:59:02.000000000 +0000
++++ mol-0.9.71.1.molrc/scripts/startmol	2006-11-17 14:54:49.000000000 +0000
+@@ -28,14 +28,19 @@
+     Linux) LINUX=1 ;;
+ esac
+ 
++unset MOLRC
++[ -r "$HOME/.molrc" ] && MOLRC="$HOME/.molrc"
++[ -n "$HOME_ETC" ] && [ -r "$HOME_ETC/.molrc" ] && MOLRC="$HOME_ETC/.molrc"
+ 
+ #########################################
+ # Command line options
+ #########################################
+ 
+-unset LOPTS OPTS
++unset LOPTS OPTS FORCE_MOLRC
+ while [ "$*" != "" ] ; do
+     case $1 in
++	--nomolrc) MOLRC="" ;;
++	--forcemolrc) FORCE_MOLRC=yes ;;
+ 	--*) LOPTS=("${LOPTS[@]}" "$1") ;;
+ 	-*) OPTS="$1 $OPTS" ;;
+ 	*) echo "Warning: Ignoring argument '$1'"
+@@ -44,6 +49,33 @@
+     shift 1
+ done
+ 
++if [ -n "$MOLRC" ]; then
++    # read options from molrc file
++    unset RCLOPTS RCOPTS
++    while read LINE; do
++	[ -z "$LINE" ] && continue # ignore empty lines
++	[ "$LINE" != "${LINE#\#}" ] && continue # ignore comments
++
++	case $LINE in
++	    --*) RCLOPTS=("${RCLOPTS[@]}" "$LINE") ;;
++	    -*) RCOPTS="$LINE $RCOPTS" ;;
++	    *) echo "Warning: Ignoring argument '$LINE'"
++		;;
++	esac
++    done < $MOLRC
++
++    # command-line options are more important than those
++    LOPTS=("${RCLOPTS[@]}" "${LOPTS[@]}")
++    OPTS="$OPTS $RCOPTS"
++else
++    if [ -n "$FORCE_MOLRC" ]; then
++	echo "Specify which OS to start or create .molrc file"
++	[ -x "$(which xmessage 2>/dev/null)" ] && \
++	    xmessage "You need to create ~/.molrc file"
++	exit 1
++    fi
++fi
++
+ unset MOLARGS FLAGS
+ while getopts ":$MOL_OPTS" x $OPTS ; do
+     if [ "$x" == "?" ] ; then
+@@ -94,7 +126,7 @@
+ 	    "      --list          list available MOL kernel modules\n"\
+ 	    "\nClient OS Selection:\n"\
+             "      --test          run self-test and exit\n"\
+-            "      --newworld      Boot Mac OS (classic) the \"newworld\" way [default]\n"\
++            "      --newworld      Boot Mac OS (classic) the \"newworld\" way\n"\
+             "      --oldworld      Boot Mac OS (classic) the \"oldworld\" way\n"\
+             " -X,  --osx           Boot Mac OS X\n"\
+             "      --linux         Boot Linux\n"\
+@@ -121,6 +153,8 @@
+ 	    "      --libdir=dir    set the MOL library directory\n"\
+ 	    "      --zapnvram      clear NVRAM\n"\
+ 	    "      --noautoboot    enter Open Firmware (if OF is used)\n"\
++	    "      --nomolrc       don't read .molrc file\n"\
++	    "      --forcemolrc    exit if there is no .molrc\n"\
+ 	    "\nFor more information, please visit <http://www.maconlinux.org>.\n"
+     exit 1;
+ }
+@@ -292,3 +326,5 @@
+ ###########################################################################
+ 
+ exec $BIN_DIR/mol "${MOLARGS[@]}"
++
++# vim: sw=4:ts=8
