@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=MOL
+Type=Application
+Comment=Mac On Linux
+Exec=startmol --forcemolrc
+Icon=mol.png
+Terminal=false
+Categories=Utility;Emulator;
+Encoding=UTF-8
+# vi: encoding=utf-8
