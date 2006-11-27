@@ -33,6 +33,7 @@ Source3:	%{name}.png
 Patch0:		%{name}-iquote.patch
 Patch1:		%{name}-scripts.patch
 Patch2:		%{name}-molrc.patch
+Patch3:		%{name}-linking.patch
 URL:		http://www.maconlinux.org/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -115,6 +116,7 @@ tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
@@ -183,6 +185,7 @@ export TERM=dumb
 %{__make} \
 	NCURSES_INCLUDES="-I/usr/include/ncurses" \
 	prefix=%{_prefix} \
+	STRIP="echo" \
 	BUILD_MODS=n
 %endif
 
