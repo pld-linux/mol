@@ -59,6 +59,8 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define _mol_datadir 		%{_datadir}/mol/%{_basever}
 %define _mol_localstatedir	/var/lib/mol
 
+%define _noautostrip		.*%{_mol_datadir}/drivers/.*
+
 %description
 With MOL you can run MacOS under Linux - in full speed! All PowerPC
 versions of MacOS are supported (including MacOSX 10.2).
