@@ -17,8 +17,8 @@
 %define	_minor	.1
 %define _rel	1
 Summary:	Runs MacOS natively on Linux/ppc
-Summary(ja):	Mac On Linux - Linux/ppc ¾å¤Î MacOS ¥Í¥¤¥Æ¥£¥Ö¼Â¹Ô´Ä¶­
-Summary(pl):	Natywne uruchamianie MacOS na Linux/ppc
+Summary(ja.UTF-8):   Mac On Linux - Linux/ppc ä¸Šã® MacOS ãƒã‚¤ãƒ†ã‚£ãƒ–å®Ÿè¡Œç’°å¢ƒ
+Summary(pl.UTF-8):   Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	%{_basever}%{_minor}
 Release:	%{_rel}
@@ -65,18 +65,18 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 With MOL you can run MacOS under Linux - in full speed! All PowerPC
 versions of MacOS are supported (including MacOSX 10.2).
 
-%description -l ja
-MOL ¤Ï MacOS ¤ò Linux ¾å¤ÇÆ°ºî¤µ¤»¤ë¤³¤È¤¬½ĞÍè¤Ş¤¹¡¥Æ°ºî¤â¹âÂ®¤Ç¤¹¡¥
-¥Ğ¡¼¥¸¥ç¥ó 9.2 ¤ò´Ş¤á¡¤PowerPC ÍÑ MacOS ¤ÎÁ´¥Ğ¡¼¥¸¥ç¥ó¤¬Æ°ºî¤·¤Ş¤¹¡¥
+%description -l ja.UTF-8
+MOL ã¯ MacOS ã‚’ Linux ä¸Šã§å‹•ä½œã•ã›ã‚‹ã“ã¨ãŒå‡ºæ¥ã¾ã™ï¼å‹•ä½œã‚‚é«˜é€Ÿã§ã™ï¼
+ãƒãƒ¼ã‚¸ãƒ§ãƒ³ 9.2 ã‚’å«ã‚ï¼ŒPowerPC ç”¨ MacOS ã®å…¨ãƒãƒ¼ã‚¸ãƒ§ãƒ³ãŒå‹•ä½œã—ã¾ã™ï¼
 
-%description -l pl
-Przy u¿yciu MOL mo¿na uruchamiaæ MacOS pod Linuksem - z pe³n±
-szybko¶ci±! Obs³ugiwane s± wszystkie wersje PowerPC MacOS-a (w³±cznie
+%description -l pl.UTF-8
+Przy uÅ¼yciu MOL moÅ¼na uruchamiaÄ‡ MacOS pod Linuksem - z peÅ‚nÄ…
+szybkoÅ›ciÄ…! ObsÅ‚ugiwane sÄ… wszystkie wersje PowerPC MacOS-a (wÅ‚Ä…cznie
 z MacOSX 10.2).
 
 %package -n kernel%{_alt_kernel}-misc-mol
 Summary:	Mac-on-Linux kernel modules
-Summary(pl):	Modu³y j±dra Mac-on-Linux
+Summary(pl.UTF-8):   ModuÅ‚y jÄ…dra Mac-on-Linux
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
@@ -89,13 +89,13 @@ Requires(postun):	%releq_kernel_up
 This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking).
 
-%description -n kernel%{_alt_kernel}-misc-mol -l pl
-Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
-tak¿e modu³ j±dra sheep_net (dla sieci).
+%description -n kernel%{_alt_kernel}-misc-mol -l pl.UTF-8
+Ten pakiet zawiera moduÅ‚ jÄ…dra Mac-on-Linux potrzebny dla MOL. Zawiera
+takÅ¼e moduÅ‚ jÄ…dra sheep_net (dla sieci).
 
 %package -n kernel%{_alt_kernel}-smp-misc-mol
 Summary:	Mac-on-Linux kernel modules SMP
-Summary(pl):	Modu³y j±dra Mac-on-Linux SMP
+Summary(pl.UTF-8):   ModuÅ‚y jÄ…dra Mac-on-Linux SMP
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
@@ -109,9 +109,9 @@ This package contains the Mac-on-Linux kernel module needed by MOL. It
 also contains the sheep_net kernel module (for networking). SMP
 version.
 
-%description -n kernel%{_alt_kernel}-smp-misc-mol -l pl
-Ten pakiet zawiera modu³ j±dra Mac-on-Linux potrzebny dla MOL. Zawiera
-tak¿e modu³ j±dra sheep_net (dla sieci). Wersja dla j±der SMP.
+%description -n kernel%{_alt_kernel}-smp-misc-mol -l pl.UTF-8
+Ten pakiet zawiera moduÅ‚ jÄ…dra Mac-on-Linux potrzebny dla MOL. Zawiera
+takÅ¼e moduÅ‚ jÄ…dra sheep_net (dla sieci). Wersja dla jÄ…der SMP.
 
 %prep
 %setup -q
