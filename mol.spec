@@ -17,8 +17,8 @@
 %define	_minor	.1
 %define _rel	1
 Summary:	Runs MacOS natively on Linux/ppc
-Summary(ja.UTF-8):   Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
-Summary(pl.UTF-8):   Natywne uruchamianie MacOS na Linux/ppc
+Summary(ja.UTF-8):	Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
+Summary(pl.UTF-8):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
 Version:	%{_basever}%{_minor}
 Release:	%{_rel}
@@ -76,7 +76,7 @@ z MacOSX 10.2).
 
 %package -n kernel%{_alt_kernel}-misc-mol
 Summary:	Mac-on-Linux kernel modules
-Summary(pl.UTF-8):   Moduły jądra Mac-on-Linux
+Summary(pl.UTF-8):	Moduły jądra Mac-on-Linux
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
@@ -95,7 +95,7 @@ także moduł jądra sheep_net (dla sieci).
 
 %package -n kernel%{_alt_kernel}-smp-misc-mol
 Summary:	Mac-on-Linux kernel modules SMP
-Summary(pl.UTF-8):   Moduły jądra Mac-on-Linux SMP
+Summary(pl.UTF-8):	Moduły jądra Mac-on-Linux SMP
 Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
