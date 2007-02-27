@@ -196,7 +196,8 @@ export TERM=dumb
 %{__make} obj-ppc/include/molversion.h local-includes
 
 %{__make} -C src/kmod/Linux setup-common
-%build_kernel_modules T=$TMPDIR -m mol -C obj-ppc/build/src/kmod
+%build_kernel_modules -m mol -C obj-ppc/build/src/kmod \
+	T=$TMPDIR
 
 %{__make} -C src/netdriver setup-tree-26
 %build_kernel_modules -m sheep -C obj-ppc/build/src/netdriver
