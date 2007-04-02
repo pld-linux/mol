@@ -5,8 +5,6 @@
 # Conditional build:
 %bcond_without	dist_kernel	# without distribution kernel
 %bcond_without	kernel		# don't build kernel modules
-%bcond_without	up		# don't build UP module
-%bcond_without	smp		# don't build SMP module
 %bcond_with	verbose		# verbose build (V=1)
 %bcond_without	userspace	# don't build userspace tools
 %bcond_with	minimal		# no X, no sound
@@ -14,8 +12,8 @@
 
 %{?debug:%define with_debugger 1}
 
-%define	_basever 0.9.71
-%define	_minor	.1
+%define	_basever 0.9.72
+%define	_minor	%{nil}
 %define _rel	1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja.UTF-8):	Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
@@ -25,9 +23,8 @@ Version:	%{_basever}%{_minor}
 Release:	%{_rel}
 License:	GPL
 Group:		Applications/Emulators
-#Source0:	http://www.maconlinux.org/downloads/%{name}-%{version}.tgz
-Source0:	http://www.mirrorservice.org/sites/www.ibiblio.org/gentoo/distfiles/%{name}-%{version}.tar.bz2
-# Source0-md5:	3eaa51927191b03b06828609a1122307
+Source0:	http://dl.sourceforge.net/mac-on-linux/%{name}-%{version}.tar.bz2
+# Source0-md5:	78294bbe5bdc86294f38891614a205d1
 Source1:	%{name}.desktop
 Source2:	%{name}-terminal.desktop
 Source3:	%{name}.png
@@ -35,7 +32,7 @@ Patch0:		%{name}-iquote.patch
 Patch1:		%{name}-scripts.patch
 Patch2:		%{name}-molrc.patch
 Patch3:		%{name}-linking.patch
-URL:		http://www.maconlinux.org/
+URL:		http://mac-on-linux.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
 %if %{with userspace}
@@ -50,7 +47,7 @@ BuildRequires:	xorg-lib-libXext-devel
 %endif
 %if %{with kernel}
 %{?with_dist_kernel:BuildRequires:	kernel%{_alt_kernel}-module-build >= 3:2.6.7}
-BuildRequires:	rpmbuild(macros) >= 1.330
+BuildRequires:	rpmbuild(macros) >= 1.380
 %endif
 Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
@@ -82,8 +79,8 @@ Release:	%{_rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
 %if %{with dist_kernel}
-%requires_releq_kernel_up
-Requires(postun):	%releq_kernel_up
+%requires_releq_kernel
+Requires(postun):	%releq_kernel
 %endif
 
 %description -n kernel%{_alt_kernel}-misc-mol
@@ -93,26 +90,6 @@ also contains the sheep_net kernel module (for networking).
 %description -n kernel%{_alt_kernel}-misc-mol -l pl.UTF-8
 Ten pakiet zawiera moduł jądra Mac-on-Linux potrzebny dla MOL. Zawiera
 także moduł jądra sheep_net (dla sieci).
-
-%package -n kernel%{_alt_kernel}-smp-misc-mol
-Summary:	Mac-on-Linux kernel modules SMP
-Summary(pl.UTF-8):	Moduły jądra Mac-on-Linux SMP
-Release:	%{_rel}@%{_kernel_ver_str}
-Group:		Base/Kernel
-Requires(post,postun):	/sbin/depmod
-%if %{with dist_kernel}
-%requires_releq_kernel_smp
-Requires(postun):	%releq_kernel_smp
-%endif
-
-%description -n kernel%{_alt_kernel}-smp-misc-mol
-This package contains the Mac-on-Linux kernel module needed by MOL. It
-also contains the sheep_net kernel module (for networking). SMP
-version.
-
-%description -n kernel%{_alt_kernel}-smp-misc-mol -l pl.UTF-8
-Ten pakiet zawiera moduł jądra Mac-on-Linux potrzebny dla MOL. Zawiera
-także moduł jądra sheep_net (dla sieci). Wersja dla jąder SMP.
 
 %prep
 %setup -q
@@ -283,17 +260,8 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %if %{with kernel}
-%if %{with up} || %{without dist_kernel}
 %files -n kernel%{_alt_kernel}-misc-mol
 %defattr(644,root,root,755)
 /lib/modules/%{_kernel_ver}/misc/mol.ko*
 /lib/modules/%{_kernel_ver}/misc/sheep.ko*
-%endif
-
-%if %{with smp} && %{with dist_kernel}
-%files -n kernel%{_alt_kernel}-smp-misc-mol
-%defattr(644,root,root,755)
-/lib/modules/%{_kernel_ver}smp/misc/mol.ko*
-/lib/modules/%{_kernel_ver}smp/misc/sheep.ko*
-%endif
 %endif
