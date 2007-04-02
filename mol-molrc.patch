@@ -71,7 +71,7 @@ diff -Nur mol-0.9.71.1.orig/scripts/startmol mol-0.9.71.1.molrc/scripts/startmol
  	    "      --noautoboot    enter Open Firmware (if OF is used)\n"\
 +	    "      --nomolrc       don't read .molrc file\n"\
 +	    "      --forcemolrc    exit if there is no .molrc\n"\
- 	    "\nFor more information, please visit <http://www.maconlinux.org>.\n"
+ 	    "\nFor more information, please visit <http://mac-on-linux.sourceforge.net>.\n"
      exit 1;
  }
 @@ -292,3 +326,5 @@

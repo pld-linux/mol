@@ -40,20 +40,6 @@ diff -Nur mol-0.9.71.1.orig/config/configure.in mol-0.9.71.1.iquote/config/confi
        AC_MSG_CHECKING([whether XDGA workaround works])   
        AC_TRY_COMPILE([
  	#include <X11/Xlib.h>
-diff -Nur mol-0.9.71.1.orig/config/Makefile.top mol-0.9.71.1.iquote/config/Makefile.top
---- mol-0.9.71.1.orig/config/Makefile.top	2006-10-28 21:59:02.000000000 +0300
-+++ mol-0.9.71.1.iquote/config/Makefile.top	2006-11-07 16:01:28.000000000 +0200
-@@ -71,8 +71,8 @@
- mollib		:= $(top_odir)/lib
- molbin		:= $(top_odir)/lib/bin
- 
--IDIRS		= -I. -I$(ARCHINCLUDES) -I./include -I$(srcdir)/shared \
--		  -I$(srcdir)/include $(INCLUDES) -I-
-+IDIRS		= -iquote. -iquote$(ARCHINCLUDES) -iquote./include -iquote$(srcdir)/shared \
-+		  -iquote$(srcdir)/include $(INCLUDES)
- all:
- 
- RELNAME		:= $(shell $(scriptdir)/reldir)
 diff -Nur mol-0.9.71.1.orig/src/cpu/mpc107/Makefile.am mol-0.9.71.1.iquote/src/cpu/mpc107/Makefile.am
 --- mol-0.9.71.1.orig/src/cpu/mpc107/Makefile.am	2006-10-28 21:59:02.000000000 +0300
 +++ mol-0.9.71.1.iquote/src/cpu/mpc107/Makefile.am	2006-11-07 16:01:28.000000000 +0200
