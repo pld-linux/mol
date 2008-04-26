@@ -12,19 +12,19 @@
 
 %{?debug:%define with_debugger 1}
 
-%define	_basever 0.9.72
-%define	_minor	%{nil}
-%define _rel	1
+%define		basever 0.9.72.1
+%define		minor	%{nil}
+%define		rel	1
 Summary:	Runs MacOS natively on Linux/ppc
 Summary(ja.UTF-8):	Mac On Linux - Linux/ppc 上の MacOS ネイティブ実行環境
 Summary(pl.UTF-8):	Natywne uruchamianie MacOS na Linux/ppc
 Name:		mol
-Version:	%{_basever}%{_minor}
-Release:	%{_rel}
+Version:	%{basever}%{minor}
+Release:	%{rel}
 License:	GPL
 Group:		Applications/Emulators
 Source0:	http://dl.sourceforge.net/mac-on-linux/%{name}-%{version}.tar.bz2
-# Source0-md5:	78294bbe5bdc86294f38891614a205d1
+# Source0-md5:	2d7431e388eeb42c06938056d9f32e2b
 Source1:	%{name}.desktop
 Source2:	%{name}-terminal.desktop
 Source3:	%{name}.png
@@ -53,8 +53,8 @@ Requires:	dev >= 2.8.0-24
 ExclusiveArch:	ppc
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define _mol_libdir 		%{_libdir}/mol/%{_basever}
-%define _mol_datadir 		%{_datadir}/mol/%{_basever}
+%define _mol_libdir 		%{_libdir}/mol/%{basever}
+%define _mol_datadir 		%{_datadir}/mol/%{basever}
 %define _mol_localstatedir	/var/lib/mol
 
 %define _noautostrip		.*%{_mol_datadir}/drivers/.*
@@ -75,7 +75,7 @@ z MacOSX 10.2).
 %package -n kernel%{_alt_kernel}-misc-mol
 Summary:	Mac-on-Linux kernel modules
 Summary(pl.UTF-8):	Moduły jądra Mac-on-Linux
-Release:	%{_rel}@%{_kernel_ver_str}
+Release:	%{rel}@%{_kernel_ver_str}
 Group:		Base/Kernel
 Requires(post,postun):	/sbin/depmod
 %if %{with dist_kernel}
@@ -100,48 +100,48 @@ także moduł jądra sheep_net (dla sieci).
 echo 'obj-m := sheep.o' > src/netdriver/Makefile.26
 sed -i 's@ \./configure @ true @' config/Makefile.master
 
-cat << EOF | sed 's/^ *//' > config/defconfig-ppc
+cat <<-'EOF' > config/defconfig-ppc
     CONFIG_PPC=y
     CONFIG_OLDWORLD=y
     CONFIG_FBDEV=y
 %if %{with minimal}
-    # CONFIG_X11 is not set
-    # CONFIG_VNC is not set
-    # CONFIG_ALSA is not set
-    # CONFIG_OSS is not set
+	# CONFIG_X11 is not set
+	# CONFIG_VNC is not set
+	# CONFIG_ALSA is not set
+	# CONFIG_OSS is not set
 %else
-    CONFIG_X11=y
-    CONFIG_VNC=y
-    CONFIG_ALSA=y
-    CONFIG_OSS=y
+	CONFIG_X11=y
+	CONFIG_VNC=y
+	CONFIG_ALSA=y
+	CONFIG_OSS=y
 %endif
-    # CONFIG_XDGA is not set
-    CONFIG_USBDEV=y
-    # CONFIG_PCIPROXY is not set
+	# CONFIG_XDGA is not set
+	CONFIG_USBDEV=y
+	# CONFIG_PCIPROXY is not set
 
-    ### Debugging
-    CONFIG_TTYDRIVER=y
+	### Debugging
+	CONFIG_TTYDRIVER=y
 %if %{with debugger}
-    CONFIG_DEBUGGER=y
-    CONFIG_DHCP_DEBUG=y
+	CONFIG_DEBUGGER=y
+	CONFIG_DHCP_DEBUG=y
 %else
-    # CONFIG_DEBUGGER is not set
-    # CONFIG_DHCP_DEBUG is not set
+	# CONFIG_DEBUGGER is not set
+	# CONFIG_DHCP_DEBUG is not set
 %endif
 
 %if 0%{?debug:1}
-    CONFIG_SCSIDEBUG=y
-    CONFIG_DUMP_PACKETS=y
+	CONFIG_SCSIDEBUG=y
+	CONFIG_DUMP_PACKETS=y
 %else
-    # CONFIG_SCSIDEBUG is not set
-    # CONFIG_DUMP_PACKETS is not set
+	# CONFIG_SCSIDEBUG is not set
+	# CONFIG_DUMP_PACKETS is not set
 %endif
-    # CONFIG_HOSTED is not set
+	# CONFIG_HOSTED is not set
 
-    ### Network drivers
-    CONFIG_TUN=y
-    CONFIG_TAP=y
-    CONFIG_SHEEP=y
+	### Network drivers
+	CONFIG_TUN=y
+	CONFIG_TAP=y
+	CONFIG_SHEEP=y
 EOF
 
 %build
