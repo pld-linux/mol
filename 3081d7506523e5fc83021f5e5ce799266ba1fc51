@@ -1,0 +1,4 @@
+- stable 0.9.68
+- MacOS X audio support
+- Support for XDGA fullscreen
+- various bug-fixes (X.2.4 works)
